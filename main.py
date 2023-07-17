@@ -14,7 +14,7 @@ from lib.forge import VersionCommand
 VersionCommand().run()
 
 args = define_args()
-wandb.init(project = 'perceiving-depression', group = args.group, entity = '')
+wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
 wandb.config.update(vars(args))
 
 dataset = nomenclature.DATASETS[args.dataset](args = args)

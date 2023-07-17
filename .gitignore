@@ -1,6 +1,9 @@
 checkpoints/
 wandb/
 
+data/databases/D-vlog/data/
+.DS_Store
+
 configs/test_config.yaml
 test_template.py
 configs/test_include_config.yaml

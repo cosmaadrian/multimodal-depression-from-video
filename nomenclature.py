@@ -5,15 +5,19 @@ MODELS = {
 
 import datasets
 DATASETS = {
+    'd-vlog': datasets.DVlogDataset
+}
 
+MODALITY = {
+    'face-landmarks': datasets.modalities.FaceLandmarks,
+    # TODO add more
 }
 
 import trainers
-TRAINERS = {
-
-}
+TRAINERS = {}
 
 import evaluators
 EVALUATORS = {
-
+    'classification': evaluators.ClassificationEvaluator, # TODO
 }
+

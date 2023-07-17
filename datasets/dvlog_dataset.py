@@ -58,6 +58,6 @@ class DVlogDataset(AcumenDataset):
 
         output = {}
         for modality in self.args.modalities:
-            output[modality] = self.nomenclature[modality](args = self.args).read_chunk(window)
+            output[modality] = self.nomenclature.MODALITY[modality](args = self.args).read_chunk(window)
 
         return output

@@ -18,6 +18,7 @@ TRAINERS = {}
 
 import evaluators
 EVALUATORS = {
-    'classification': evaluators.ClassificationEvaluator, # TODO
+    # TODO
+    'classification': evaluators.ClassificationEvaluator,
 }
 

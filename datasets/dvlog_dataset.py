@@ -3,7 +3,6 @@ import pandas as pd
 
 import lib
 from lib.dataset_extra import AcumenDataset
-from .modalities import FaceLandmarks
 
 
 class DVlogDataset(AcumenDataset):
@@ -22,6 +21,11 @@ class DVlogDataset(AcumenDataset):
         if kind == 'test':
             self.df = pd.read_csv('./data/databases/D-vlog/splits/test.csv')
 
+        self.modalities = {
+            modality: self.nomenclature.MODALITY[modality](args = self.args)
+            for modality in self.args.modalities
+        }
+
     def __len__(self):
         return len(self.df.index)
 
@@ -31,7 +35,7 @@ class DVlogDataset(AcumenDataset):
 
         return torch.utils.data.DataLoader(
             dataset,
-            num_workers = 1,
+            num_workers = 4,
             pin_memory = True,
             batch_size = args.batch_size
         )
@@ -44,7 +48,7 @@ class DVlogDataset(AcumenDataset):
             dataset,
             batch_size = args.batch_size,
             shuffle = False,
-            num_workers = 1,
+            num_workers = 4,
             pin_memory = True,
         )
 
@@ -58,6 +62,6 @@ class DVlogDataset(AcumenDataset):
 
         output = {}
         for modality in self.args.modalities:
-            output[modality] = self.nomenclature.MODALITY[modality](args = self.args).read_chunk(window)
+            output[modality] = self.modalities[modality].read_chunk(window)
 
         return output

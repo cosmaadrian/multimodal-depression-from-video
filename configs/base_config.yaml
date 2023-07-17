@@ -1,0 +1,26 @@
+dataset: null
+trainer: null
+evaluators: []
+
+batch_size: 512
+accumulation_steps: 1
+
+model_checkpoint:
+  monitor_quantity: <TODO>
+  direction: up
+
+epochs: 300
+eval_every: 1
+
+lr_scheduler:
+  start_epoch: 0
+  end_epoch: 300
+  base_lr: 0.0001
+  max_lr:  0.001
+  mode: triangular
+  step_size_up: 10
+  step_size_down: 10
+
+model: null
+model_args:
+  embedding_size: null

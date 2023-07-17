@@ -29,6 +29,9 @@ NOMENCLATURE = easydict.EasyDict({
 	'EVALUATORS': {
         # TODO classification evaluator
 	},
+
+	'MODALITIES': {
+	},
 })
 
 
@@ -37,7 +40,7 @@ import nomenclature
 
 # Merging with user stuff.
 
-for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS']:
+for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS', 'MODALITIES', 'LOSSES']:
 	if actor_type not in nomenclature.__dict__:
 		continue
 

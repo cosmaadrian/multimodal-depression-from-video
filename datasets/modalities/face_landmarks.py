@@ -7,8 +7,10 @@ class FaceLandmarks(Modality):
 
     def read_chunk(self, window):
         # TODO needs refactoring
-        data = np.load(f'../../data/databases/D-vlog/data/face_landmarks/{window}')
+        data = np.load(f'{self.args.environment["d-vlog"]}/data/face_landmarks/{window}')['data']
         data = self.post_process(data)
+
+        data = data[:256].astype(np.float32)
 
         return data
 

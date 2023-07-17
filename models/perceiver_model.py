@@ -6,10 +6,14 @@ class PerceiverModel(torch.nn.Module):
         super().__init__()
         self.args = args
 
-        self.output = MultiHead(args)
+        self.output = MultiHead(self.args)
 
     def forward(self, batch):
-        return torch.zeros(16)
+        print(batch)
+        exit()
+        return batch['label']
+       
+       
         # TODO ...
         # output = self.model(batch)
 

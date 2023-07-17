@@ -8,7 +8,7 @@ DATASETS = {
     'd-vlog': datasets.DVlogDataset
 }
 
-MODALITY = {
+MODALITIES = {
     'face-landmarks': datasets.modalities.FaceLandmarks,
     # TODO add more
 }

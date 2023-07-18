@@ -1,5 +1,6 @@
 import torch
 import pandas as pd
+import random
 
 import lib
 from lib.dataset_extra import AcumenDataset
@@ -22,6 +23,7 @@ class DVlogDataset(AcumenDataset):
             self.df = pd.read_csv(f'{args.environment["d-vlog"]}/splits/test.csv')
 
         self.df['label'] = self.df['label'].apply(lambda x: 0 if x == 'normal' else 1)
+        self.df['gender'] = self.df['gender'].apply(lambda x: 0 if x == 'f' else 1)
 
         self.modalities = {
             modality: self.nomenclature.MODALITIES[modality](args = self.args)
@@ -50,26 +52,28 @@ class DVlogDataset(AcumenDataset):
             dataset,
             batch_size = args.batch_size,
             shuffle = False,
-            num_workers = 4,
+            num_workers = 1, # TODO change to 4
             pin_memory = True,
         )
 
     def get_random_window(self, video):
-        # TODO get a random window ?
-        # use glob.glob to get all the windows
-        # then use random.choice to get a random window
-        
-        return video['video_id'] + '.npz'
+        video_length = float(video['duration'].replace(',', '.'))
+        window_length = self.args.n_temporal_windows * self.args.seconds_per_window
+
+        start = random.randint(0, int(video_length) - window_length)
+        end = start + window_length
+
+        return start, end
 
     def __getitem__(self, idx):
         video = self.df.iloc[idx]
-        window = self.get_random_window(video)
+        start, end = self.get_random_window(video)
 
         output = {}
         for modality in self.args.modalities:
-            output['modality:' + modality] = torch.from_numpy(self.modalities[modality].read_chunk(window))
+            output['modality:' + modality] = torch.from_numpy(self.modalities[modality].read_chunk(video['video_id'], start, end))
         
-        output['gender'] = 0 if video['gender'] == 'f' else 1
         output['label'] = video['label']
+        output['gender'] = video['gender']
 
         return output

@@ -9,8 +9,10 @@ class PerceiverModel(torch.nn.Module):
         self.output = MultiHead(self.args)
 
     def forward(self, batch):
-        print(batch)
-        exit()
+        for key, value in batch.items():
+            print(key, value.shape)
+
+        exit(-1)
         return batch['label']
        
        

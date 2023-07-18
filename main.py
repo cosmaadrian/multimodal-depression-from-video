@@ -2,6 +2,8 @@ import torch
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 import wandb
+import random
+import numpy as np
 
 import lib.callbacks as callbacks
 from lib.loggers import WandbLogger
@@ -16,6 +18,11 @@ VersionCommand().run()
 args = define_args()
 wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
 wandb.config.update(vars(args))
+
+torch.manual_seed(args.seed)
+torch.cuda.manual_seed(args.seed)
+np.random.seed(args.seed)
+random.seed(args.seed)
 
 dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)

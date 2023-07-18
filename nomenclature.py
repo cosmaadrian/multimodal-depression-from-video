@@ -10,7 +10,10 @@ DATASETS = {
 
 MODALITIES = {
     'face-landmarks': datasets.modalities.FaceLandmarks,
-    # TODO add more
+    'hand-landmarks': datasets.modalities.HandLandmarks,
+    'body-landmarks': datasets.modalities.BodyLandmarks,
+    'audio-embeddings': datasets.modalities.AudioEmbeddings,
+    'face-embeddings': datasets.modalities.FaceEmbeddings,
 }
 
 import trainers

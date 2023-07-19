@@ -16,9 +16,12 @@ class Modality(object):
 
         return indexes
 
-    def read_chunk(self, video_id, start, end):
-        start_frame = int(start * self.fps)
-        end_frame = int(end * self.fps) 
+    def read_chunk(self, video, start, end):
+        video_id = video["video_id"]
+        fps =  100 if "audio" in self.modality_dir else video["video_frame_rate"]
+
+        start_frame = int(start * fps)
+        end_frame = int(end * fps) 
 
         indexes = self._indexes_from_chunkfiles(video_id)
         

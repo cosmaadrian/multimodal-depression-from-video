@@ -61,7 +61,7 @@ class DVlogDataset(AcumenDataset):
         window_length = self.args.n_temporal_windows * self.args.seconds_per_window
 
         start = random.randint(0, int(video_length) - window_length)
-        end = start + window_length 
+        end = start + window_length
 
         return start, end
 
@@ -71,7 +71,7 @@ class DVlogDataset(AcumenDataset):
 
         output = {}
         for modality in self.args.modalities.keys():
-            output['modality:' + modality] = torch.from_numpy(self.modalities[modality].read_chunk(video['video_id'], start, end).astype('float32'))
+            output['modality:' + modality] = torch.from_numpy(self.modalities[modality].read_chunk(video,  start, end).astype('float32'))
         
         output['labels'] = video['label']
         output['gender'] = video['gender']

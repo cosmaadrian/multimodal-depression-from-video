@@ -9,11 +9,11 @@ DATASETS = {
 }
 
 MODALITIES = {
-    'face-landmarks': datasets.modalities.FaceLandmarks,
-    'hand-landmarks': datasets.modalities.HandLandmarks,
-    'body-landmarks': datasets.modalities.BodyLandmarks,
-    'audio-embeddings': datasets.modalities.AudioEmbeddings,
-    'face-embeddings': datasets.modalities.FaceEmbeddings,
+    'face_landmarks': datasets.modalities.FaceLandmarks,
+    'hand_landmarks': datasets.modalities.HandLandmarks,
+    'body_landmarks': datasets.modalities.BodyLandmarks,
+    'audio_embeddings': datasets.modalities.AudioEmbeddings,
+    'face_embeddings': datasets.modalities.FaceEmbeddings,
 }
 
 import trainers

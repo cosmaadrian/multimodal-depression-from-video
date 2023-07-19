@@ -47,7 +47,7 @@ class FaceEmbeddings(Modality):
     def __init__(self, args):
         super().__init__(args)
         self.fps = 25
-        self.modality_dir = 'face_embeddings'
+        self.modality_dir = 'face_emonet_embeddings'
 
     def post_process(self, data):
         # TODO reshape / normalize etc

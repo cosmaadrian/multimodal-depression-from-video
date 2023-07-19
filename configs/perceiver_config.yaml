@@ -1,5 +1,7 @@
 dataset: d-vlog
 trainer: auto
+log_every: 5
+
 evaluators:
   - name: classification
     args: {}
@@ -23,12 +25,13 @@ seed: 42
 n_temporal_windows: 4
 seconds_per_window: 2
 
+# modality: input_dim
 modalities:
-  - face-landmarks
-  - hand-landmarks
-  - body-landmarks
-  - audio-embeddings
-  # - face-embeddings
+  audio_embeddings: 256
+  face_landmarks: 3
+  hand_landmarks: 5
+  body_landmarks: 5
+  face_embeddings: 256
 
 batch_size: 2
 accumulation_steps: 1
@@ -51,4 +54,16 @@ scheduler_args:
 
 model: perceiver
 model_args:
-  embedding_size: 256 # TODO
+  latent_num: 16
+  latent_dim: 256
+  context_dim: 512
+  cross_attn_num_heads: 4
+  cross_attn_dim_head: 64
+  cross_attn_parameter_sharing: false
+  self_attn_block_type: "transformer"
+  self_attn_num_layers: 12
+  self_attn_num_heads: 4
+  self_attn_dim_head: 64      
+  dropout_rate: 0.1
+  self_attn_parameter_sharing: true
+  extracting_embeddings: false

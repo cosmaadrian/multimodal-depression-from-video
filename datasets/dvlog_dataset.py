@@ -27,7 +27,7 @@ class DVlogDataset(AcumenDataset):
 
         self.modalities = {
             modality: self.nomenclature.MODALITIES[modality](args = self.args)
-            for modality in self.args.modalities
+            for modality in self.args.modalities.keys()
         }
 
     def __len__(self):
@@ -61,7 +61,7 @@ class DVlogDataset(AcumenDataset):
         window_length = self.args.n_temporal_windows * self.args.seconds_per_window
 
         start = random.randint(0, int(video_length) - window_length)
-        end = start + window_length
+        end = start + window_length 
 
         return start, end
 
@@ -70,10 +70,10 @@ class DVlogDataset(AcumenDataset):
         start, end = self.get_random_window(video)
 
         output = {}
-        for modality in self.args.modalities:
-            output['modality:' + modality] = torch.from_numpy(self.modalities[modality].read_chunk(video['video_id'], start, end))
+        for modality in self.args.modalities.keys():
+            output['modality:' + modality] = torch.from_numpy(self.modalities[modality].read_chunk(video['video_id'], start, end).astype('float32'))
         
-        output['label'] = video['label']
+        output['labels'] = video['label']
         output['gender'] = video['gender']
 
         return output

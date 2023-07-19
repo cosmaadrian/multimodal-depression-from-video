@@ -18,7 +18,7 @@ class Modality(object):
 
     def read_chunk(self, video_id, start, end):
         start_frame = int(start * self.fps)
-        end_frame = int(end * self.fps)
+        end_frame = int(end * self.fps) 
 
         indexes = self._indexes_from_chunkfiles(video_id)
         

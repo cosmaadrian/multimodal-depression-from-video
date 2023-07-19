@@ -51,7 +51,7 @@ class CoralHead(torch.nn.Module):
         self.head_args = head_args
 
         self.outputs = CoralLayer(
-            size_in = self.args.model_args.embedding_size,
+            size_in = self.args.model_args.latent_dim,
             num_classes = self.head_args.num_classes
         )
 
@@ -73,7 +73,7 @@ class ClassificationHead(torch.nn.Module):
         super(ClassificationHead, self).__init__()
         self.args = args
         self.head_args = head_args
-        self.outputs = nn.Linear(self.args.model_args.embedding_size, self.head_args.num_classes)
+        self.outputs = nn.Linear(self.args.model_args.latent_dim, self.head_args.num_classes)
 
     def forward(self, model_output: ModelOutput) -> ClassificationOutput:
         logits = self.outputs(model_output.representation)
@@ -93,7 +93,7 @@ class MultiLabelHead(torch.nn.Module):
         super(MultiLabelHead, self).__init__()
         self.args = args
         self.head_args = head_args
-        self.outputs = nn.Linear(self.args.model_args.embedding_size, self.head_args.num_classes)
+        self.outputs = nn.Linear(self.args.model_args.latent_dim, self.head_args.num_classes)
 
     def forward(self, model_output: ModelOutput) -> ClassificationOutput:
         logits = self.outputs(model_output.representation)

@@ -34,7 +34,7 @@ class ClassificationEvaluator(AcumenEvaluator):
 
             output = self.model(batch)['depression']
 
-            labels = batch['label'].detach().cpu().numpy().ravel().tolist()
+            labels = batch['labels'].detach().cpu().numpy().ravel().tolist()
 
             y_true.extend(labels)
             y_pred.extend(output.labels.detach().cpu().numpy().ravel().tolist())

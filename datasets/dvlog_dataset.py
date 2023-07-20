@@ -30,8 +30,6 @@ class DVlogDataset(AcumenDataset):
             for modality in self.args.modalities.keys()
         }
 
-        self.max_window_length = self.
-
     def __len__(self):
         return len(self.df.index)
 
@@ -74,7 +72,7 @@ class DVlogDataset(AcumenDataset):
         output = {}
         for modality in self.args.modalities.keys():
             chunk = self.modalities[modality].read_chunk(video, start, end).astype('float32')
-            chunk, mask = self.modalities[modality].post_process(chunk, max_length=)
+            chunk, mask = self.modalities[modality].post_process(chunk)
             output['modality:' + modality] = (torch.from_numpy(chunk), torch.from_numpy(mask))
         
         # -- computing mask tensor

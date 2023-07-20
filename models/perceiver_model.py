@@ -39,6 +39,9 @@ class PerceiverModel(torch.nn.Module):
         else:
             self.self_attn_blocks = SelfAttentionBlock(self.args)
 
+        # final normalization layer
+        self.final_norm = torch.nn.LayerNorm(self.args.model_args.latent_dim)
+
         # classification layer
         self.classification_layer = MultiHead(args)
 
@@ -51,8 +54,9 @@ class PerceiverModel(torch.nn.Module):
         for modalityID in self.args.modalities.keys():
             data = batch[f"modality:{modalityID}:data"]
             mask = batch[f"modality:{modalityID}:mask"]
-            
-            data = rearrange(data, "b ... d -> b (...) d")
+
+            # it should be done when loading the data
+            # data = rearrange(data, "b ... d -> b (...) d")
 
             # encoding modality input data
             data = self.encoders[modalityID](data)
@@ -71,7 +75,14 @@ class PerceiverModel(torch.nn.Module):
 
         if self.args.model_args.extracting_embeddings:
             return latent
-    
-        # averaging the latent embeddings and applying classification
-        output = ModelOutput(representation=latent.mean(axis=1))
+
+        # window average and final normalization
+        latent = self.final_norm(
+            Reduce("b n d -> b d", "mean")(latent),
+        )
+
+        # applying classification
+        output = ModelOutput(representation=latent)
+
         return self.classification_layer(output)
+

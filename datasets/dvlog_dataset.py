@@ -52,7 +52,7 @@ class DVlogDataset(AcumenDataset):
             dataset,
             batch_size = args.batch_size,
             shuffle = False,
-            num_workers = args.environment['num_workers'], 
+            num_workers = args.environment['num_workers'],
             pin_memory = True,
         )
 
@@ -75,8 +75,7 @@ class DVlogDataset(AcumenDataset):
             chunk, mask = self.modalities[modality].post_process(chunk)
             output[f'modality:{modality}:data'] = chunk
             output[f'modality:{modality}:mask'] = mask
-        
-        # computing mask tensor
+
         output['labels'] = video['label']
         output['gender'] = video['gender']
 

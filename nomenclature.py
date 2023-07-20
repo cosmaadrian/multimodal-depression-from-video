@@ -1,5 +1,6 @@
 import models
 MODELS = {
+    'baseline': models.BaselineModel,
     'perceiver': models.PerceiverModel
 }
 

@@ -21,11 +21,13 @@ class Modality(object):
         fps =  100 if "audio" in self.modality_dir else int(video["video_frame_rate"])
 
         start_frame = int(start * fps)
-        end_frame = int(end * fps) 
+        end_frame = int(end * fps)
 
         indexes = self._indexes_from_chunkfiles(video_id)
-        
+
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
+        if len([v for v in indexes if v[1] >= end_frame]) == 0:
+            print(video_id, start_frame, end_frame)
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]
 
         files_in_window = sorted([v for v in indexes if v[0] >= min_index and v[1] <= max_index])
@@ -38,7 +40,7 @@ class Modality(object):
 
             if start_frame > start:
                 start_index = start_frame - start
-            
+
             if end_frame < end:
                 end_index = end_frame - start
 
@@ -54,10 +56,7 @@ class Modality(object):
             output = (output - np.mean(output, axis=0)) / np.std(output, axis=0)
 
             # flattening last dimensions -> (windows, frames, embed_size)
-            if 'hand' in self.modality_dir:
-                output = np.reshape(output, (output.shape[0], output.shape[1], output.shape[2] * output.shape[3] * output.shape[4]))
-            else:
-                output = np.reshape(output, (output.shape[0], output.shape[1], output.shape[2] * output.shape[3]))
+            output = np.reshape(output, (output.shape[0], output.shape[1], -1))
 
         # TODO: RETURN LIST OF INTEGERS INDICATING WHERE MODALITY WAS NOT FOUND BY FRAME
 
@@ -75,19 +74,19 @@ class Modality(object):
         """
         # print(data.shape)
         W, N, D = data.shape
-        
+
         # padding to the max length
         max_fps = self.args.max_audio_fps if "audio" in self.modality_dir else self.args.max_video_fps
         frame_max_length = int(self.args.seconds_per_window) * int(max_fps)
         dif_with_max = frame_max_length - N
 
         pad_data = np.pad(data, [(0,0), (0, dif_with_max), (0,0)], mode="constant", constant_values=0)
-    
+
         # computing mask
         # TODO check if mask is correct (1 = masked, 0 = not masked ???)
         mask = np.ones((W, N))
         mask = np.pad(mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
-    
+
         # TODO: NO-MODALITY FRAME MASK
         # TODO: NORMALIZATION
 

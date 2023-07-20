@@ -32,7 +32,7 @@ num_landmarks_per_hand: 21
 modalities:
   audio_embeddings: 256
   face_landmarks: 3
-  : 5
+  hand_landmarks: 5
   body_landmarks: 5
   face_embeddings: 256
 

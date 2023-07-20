@@ -2,7 +2,6 @@ import torch
 from einops import rearrange, repeat
 from einops.layers.torch import Reduce
 
-from .repeat import repeat
 from .perceiver_blocks import TransformerLayer
 from lib.model_extra import MultiHead, ModelOutput
 
@@ -11,11 +10,10 @@ class BaselineModel(torch.nn.Module):
         super().__init__()
         self.args = args
 
-        # sanity checking
-        assert (self.args.n_temporal_windows == 1,
-            f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
+        # sanity checkings
+        assert self.args.n_temporal_windows == 1, f"The Baseline Model only supports one temporal window but "
+            "",
         )
-
         # modality projection
         self.projections = torch.nn.ModuleDict()
         for modalityID in self.args.modalities.keys():
@@ -29,38 +27,35 @@ class BaselineModel(torch.nn.Module):
         self.modality_embeddings = torch.nn.ModuleDict()
         for modalityID in self.args.modalities.keys():
             max_fps = self.args.max_audio_fps if "audio" in modalityID else args.max_video_fps
-            max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
+            max_length = max_fps * (self.args.seconds_per_window * self.args.n_temporal_windows) # it should be only one window
 
-            self.positional_embeddings[modalityID] = torch.nn.Embedding(
-                max_length, self.args.model_args.latent_dim,
+            # TODO: Using nn.Embedding layers ??
+            self.positional_embeddings[modalityID] = torch.nn.Parameter(
+                torch.randn(1, max_length, self.args.model_args.latent_dim)
             )
 
-            self.modality_embeddings[modalityID] = torch.nn.Embedding(
-                max_length, self.args.model_args.latent_dim,
+            self.modality_embeddings[modalityID] = torch.nn.Parameter(
+                torch.randn(1, max_length, self.args.model_args.latent_dim)
             )
 
-            # TODO: Before projection a reshape should be done to distinguish one hand from another but ...
-            if "hand" in modalityID:
+            # TODO: Before projection a reshape should be done to distinguish one hand from another
+            if "hands" in modalityID:
                 self.hands_frontier = self.args.model_args.latent_dim // 2
                 # special left- and right-hand modality embeddings
-                self.left_hand_embedding = torch.nn.Embedding(
-                    max_length, self.hands_frontier,
+                self.left_hand_embedding = torch.nn.Parameter(
+                    torch.randn(1, max_length, self.hands_frontier)
                 )
-                self.right_hand_embedding = torch.nn.Embedding(
-                    max_length, self.hands_frontier,
+                self.right_hand_embedding = torch.nn.Parameter(
+                    torch.randn(1, max_length, self.hands_frontier)
                 )
 
         # transformer block
-        self.transformer_block = repeat(
-            self.args.model_args.num_layers,
-            lambda lnum: TransformerLayer(
-                self.args,
-            ),
-            self.args.model_args.layer_dropout_rate,
+        self.transformer_block = torch.nn.Sequential(
+            *[TransformerLayer(self.args) for _ in range(self.args.model_args.num_layers)],
         )
 
         # final normalization layer
-        self.final_norm = torch.nn.LayerNorm(self.args.model_args.latent_dim)
+        self.final_norm = nn.LayerNorm(self.args.model_args.latent_dim)
 
         # classification layer
         self.classification_layer = MultiHead(args)
@@ -70,28 +65,25 @@ class BaselineModel(torch.nn.Module):
         all_modality_data = []
         all_modality_mask = []
         for modalityID in self.args.modalities.keys():
-            max_fps = self.args.max_audio_fps if "audio" in modalityID else self.args.max_video_fps
-            max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
+            data = batch[f"modality:{modalityID}:data"]
+            mask = batch[f"modality:{modalityID}:mask"]
 
-            # note that temporal window dimension is squeezed
-            data = batch[f"modality:{modalityID}:data"].squeeze(1)
-            mask = batch[f"modality:{modalityID}:mask"].squeeze(1)
-            time_steps = torch.arange(max_length).to(data.device)
+            # it should be done when loading the data
+            # data = rearrange(data, "b ... d -> b (...) d")
 
             # projecting input data
             data = self.projections[modalityID](data)
 
             # adding positional embedding
-            data = data + self.positional_embeddings[modalityID](time_steps)
+            data = data + self.positional_embeddings[modalityID]
 
             # adding modality embedding
-            data = data + self.modality_embeddings[modalityID](time_steps)
+            data = data + self.modality_embeddings[modalityID]
 
             # adding special left- and right-hand embeddings
             if modalityID == "hand_landmarks":
-                # TODO: Discuss about this hands' issue
-                data[:, :, :self.hands_frontier] = data[:, :, :self.hands_frontier] + self.left_hand_embedding(time_steps)
-                data[:, :, self.hands_frontier:] = data[:, :, self.hands_frontier:] + self.right_hand_embedding(time_steps)
+                data[:, :, :self.hands_frontier] = data[:, :, :self.hands_frontier] + self.left_hand_embedding
+                data[:, :, self.hands_frontier:] = data[:, :, self.hands_frontier:] + self.right_hand_embedding
 
             all_modality_data.append(data)
             all_modality_mask.append(mask)
@@ -101,13 +93,13 @@ class BaselineModel(torch.nn.Module):
         cat_mask = torch.cat(all_modality_mask, dim=1)
 
         # applying transformer encoder
-        output, _ = self.transformer_block(cat_data, cat_mask)
+        output = self.transformer_block(cat_data, mask=cat_mask)
 
         if self.args.model_args.extracting_embeddings:
             return output
 
         # window average and final normalization
-        output = self.final_norm(
+        output = self.final_nom(
             Reduce('b n d -> b d', 'mean')(output),
         )
 

@@ -73,17 +73,18 @@ class SelfAttentionBlock(torch.nn.Module):
             self_attn_layer = TransformerLayer
         else:
             raise NotImplementedError("Support only transformer")
-        
+
+        # TODO: Use MultiSequential to allow multiple inputs and outputs in the foward pass
         self.self_attn_block = torch.nn.Sequential(
             *[self_attn_layer(self.args) for _ in range(self.args.model_args.self_attn_num_layers)],
         )
 
     def forward(self, latent, mask=None):
-        
-        latent = self.self_attn_block(latent)
 
-        return latent
-    
+        latent = self.self_attn_block(latent, mask=mask)
+
+        return latent, mask
+
 class TransformerLayer(torch.nn.Module):
     def __init__(self, args):
         super().__init__()
@@ -109,9 +110,9 @@ class TransformerLayer(torch.nn.Module):
             ),
         )
 
-    def forward(self, latent):
+    def forward(self, latent, mask=None):
 
-        latent = self.self_attn(latent) + latent
+        latent = self.self_attn(latent, mask=mask) + latent
         latent = self.self_ff(latent) + latent
-            
-        return latent
+
+        return latent, mask

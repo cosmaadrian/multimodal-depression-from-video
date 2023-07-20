@@ -31,9 +31,9 @@ max_video_fps: 30
 # modality: input_dim
 modalities:
   audio_embeddings: 256
-  face_landmarks: 3
-  hand_landmarks: 5
-  body_landmarks: 5
+  face_landmarks: 204
+  hand_landmarks: 210
+  body_landmarks: 165
   face_embeddings: 256
 
 max_video_fps: 30
@@ -69,7 +69,7 @@ model_args:
   self_attn_block_type: "transformer"
   self_attn_num_layers: 12
   self_attn_num_heads: 4
-  self_attn_dim_head: 64      
+  self_attn_dim_head: 64
   dropout_rate: 0.1
   self_attn_parameter_sharing: true
   extracting_embeddings: false

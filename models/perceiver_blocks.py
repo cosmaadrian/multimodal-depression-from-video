@@ -78,7 +78,7 @@ class SelfAttentionBlock(torch.nn.Module):
             *[self_attn_layer(self.args) for _ in range(self.args.model_args.self_attn_num_layers)],
         )
 
-    def forward(self, latent):
+    def forward(self, latent, mask=None):
         
         latent = self.self_attn_block(latent)
 

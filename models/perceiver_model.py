@@ -42,7 +42,7 @@ class PerceiverModel(torch.nn.Module):
         # -- classification layer
         self.classification_layer = MultiHead(args)
 
-    def forward(self, batch, mask=None):
+    def forward(self, batch):
         # -- adding batch dimension to the latent tensor
         batch_size = batch["labels"].shape[0]
         latent = repeat(self.latent, "n d -> b n d", b = batch_size)

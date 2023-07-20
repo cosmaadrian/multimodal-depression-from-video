@@ -1,0 +1,65 @@
+dataset: d-vlog
+trainer: auto
+log_every: 5
+
+evaluators:
+  - name: classification
+    args: {}
+
+heads:
+  - kind: classification
+    name: depression
+    args:
+      num_classes: 2
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2
+
+seed: 42
+
+# TODO sensitivity test
+n_temporal_windows: 1
+seconds_per_window: 2
+max_audio_fps: 100
+max_video_fps: 30
+num_landmarks_per_hand: 21
+
+# modality: input_dim
+modalities:
+  audio_embeddings: 256
+  face_landmarks: 3
+  : 5
+  body_landmarks: 5
+  face_embeddings: 256
+
+batch_size: 2
+accumulation_steps: 1
+
+model_checkpoint:
+  monitor_quantity: ClassificationEvaluator_acc
+  direction: up
+
+epochs: 300
+eval_every: 1
+
+scheduler_args:
+  start_epoch: 0
+  end_epoch: 300
+  base_lr: 0.0001
+  max_lr:  0.001
+  mode: triangular
+  step_size_up: 10
+  step_size_down: 10
+
+model: baseline
+model_args:
+  latent_dim: 256
+  num_layers: 12
+  self_attn_num_heads: 4
+  self_attn_dim_head: 64
+  dropout_rate: 0.1
+  extracting_embeddings: false

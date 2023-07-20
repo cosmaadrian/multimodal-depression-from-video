@@ -10,48 +10,77 @@ class BaselineModel(torch.nn.Module):
         super().__init__()
         self.args = args
 
-        # -- modality embedding projection
-        self.encoders = torch.nn.ModuleDict()
+        # -- modality projection
+        self.projections = torch.nn.ModuleDict()
         for modalityID in self.args.modalities.keys():
-            self.encoders[modalityID] = torch.nn.Linear(
+            self.projections[modalityID] = torch.nn.Linear(
                 self.args.modalities[modalityID],
-                self.args.model_args.attn_dim,
+                self.args.model_args.latent_dim,
             )
 
-        # -- self attention blocks
-        self.self_attn_blocks = SelfAttentionBlock(self.args)
+        # -- positional and modality embeddings
+        self.positional_embeddings = torch.nn.ModuleDict()
+        self.modality_embeddings = torch.nn.ModuleDict()
+        for modalityID in self.args.modalities.keys():
+            max_fps = self.args.max_audio_fps if "audio" in modalityID else args.max_video_fps
+            max_length = max_fps * (self.args.seconds_per_window * self.args.n_temporal_windows) # it should be only one window
+
+            # TODO: Using nn.Embedding layers ??
+            self.positional_embeddings[modalityID] = torch.nn.Parameter(
+                torch.randn(1, max_length, self.args.model_args.latent_dim)
+            )
+
+            self.modality_embeddings[modalityID] = torch.nn.Parameter(
+                torch.randn(1, max_length, self.args.model_args.latent_dim)
+            )
+        # -- -- special left- and right-hand modality embeddings   
+        self.left_hand_embedding = torch.nn.Parameter(
+            torch.randn(1, self.args.num_landmarks_per_hand, self.args.model_args.latent_dim)
+        )
+        self.right_hand_embedding = torch.nn.Parameter(
+            torch.randn(1, self.args.num_landmarks_per_hand, self.args.model_args.latent_dim)
+        )
+
+        # -- transformer block
+        self.transformer_block = torch.nn.Sequential(
+            *[TransformerLayer(self.args) for _ in range(self.args.model_args.num_layers)],
+        )
 
         # -- classification layer
         self.classification_layer = MultiHead(args)
 
     def forward(self, batch, mask=None):
-        # -- adding batch dimension to the latent tensor
-        batch_size = batch["labels"].shape[0]
-        latent = repeat(self.latent, "n d -> b n d", b = batch_size)
-
         # -- processing the different modalities
+        all_modalities = []
         for modalityID in self.args.modalities.keys():
-            data = batch[f"modality:{modalityID}"]
-            data = rearrange(data, "b ... d -> b (...) d")
+            z = batch[f"modality:{modalityID}"]
+            z = rearrange(z, "b ... d -> b (...) d")
 
-            # -- -- encoding modality input data
-            data = self.encoders[modalityID](data)
+            # -- -- projecting input data
+            z = self.projections[modalityID](z)
 
-            # -- -- applying cross attention to obtain a more enriched latent representation
-            if isinstance(self.cross_attn_blocks, torch.nn.ModuleDict):
-                latent = self.cross_attn_blocks[modalityID](latent, context=data, mask=mask)
-            else:
-                latent = self.cross_attn_blocks(latent, context=data, mask=mask)
+            # -- -- adding positional embedding
+            z = z + self.positional_embeddings[modalityID]
 
-            # -- -- applying self attention to the enriched latent representation
-            if isinstance(self.self_attn_blocks, torch.nn.ModuleDict):
-                latent = self.self_attn_blocks[modalityID](latent)
-            else:
-                latent = self.self_attn_blocks(latent)
+            # -- -- adding modality embedding
+            z = z + self.modality_embeddings[modalityID]
+
+            # -- -- adding special left- and right-hand embeddings
+            if modalityID == "hand_landmarks":
+                z[:, :self.num_landmarks_per_hand, :] = z[:, :self.num_landmarks_per_hand, :] + self.left_hand_embedding
+                z[:, self.num_landmarks_per_hand:, :] = z[:, self.num_landmarks_per_hand:, :] + self.right_hand_embedding
+
+            all_modalities.append(z)
+
+        # -- concatenating all modalities
+        x = torch.cat(all_modalities, dim=1)
+
+        # -- -- applying transformer encoder
+        x = self.transformer_block(x)
 
         if self.args.model_args.extracting_embeddings:
-            return latent
-    
-        # -- averaging the latent embeddings and applying classification
-        output = ModelOutput(representation=latent.mean(axis=1))
+            return x
+
+        # -- averaging embedding and applying classification
+        output = ModelOutput(representation=x.mean(axis=1))
         return self.classification_layer(output)

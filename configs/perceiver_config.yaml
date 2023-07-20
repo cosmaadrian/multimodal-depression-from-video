@@ -36,6 +36,9 @@ modalities:
   body_landmarks: 5
   face_embeddings: 256
 
+max_video_fps: 30
+max_audio_fps: 100
+
 batch_size: 2
 accumulation_steps: 1
 

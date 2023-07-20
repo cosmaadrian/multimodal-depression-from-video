@@ -39,7 +39,7 @@ class DVlogDataset(AcumenDataset):
 
         return torch.utils.data.DataLoader(
             dataset,
-            num_workers = 4,
+            num_workers = args.environment['num_workers'],
             pin_memory = True,
             batch_size = args.batch_size
         )
@@ -52,7 +52,7 @@ class DVlogDataset(AcumenDataset):
             dataset,
             batch_size = args.batch_size,
             shuffle = False,
-            num_workers = 1, # TODO change to 4
+            num_workers = args.environment['num_workers'], 
             pin_memory = True,
         )
 
@@ -73,10 +73,10 @@ class DVlogDataset(AcumenDataset):
         for modality in self.args.modalities.keys():
             chunk = self.modalities[modality].read_chunk(video, start, end).astype('float32')
             chunk, mask = self.modalities[modality].post_process(chunk)
-            output['modality:' + modality] = (torch.from_numpy(chunk), torch.from_numpy(mask))
+            output[f'modality:{modality}:data'] = chunk
+            output[f'modality:{modality}:mask'] = mask
         
-        # -- computing mask tensor
-        
+        # computing mask tensor
         output['labels'] = video['label']
         output['gender'] = video['gender']
 

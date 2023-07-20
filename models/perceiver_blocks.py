@@ -10,19 +10,19 @@ class ModalityEncoderBlock(torch.nn.Module):
         self.args = args
         self.encoder_dim = self.args.modalities[modalityID]
 
-        # -- projection
+        # projection
         self.encoder_block = torch.nn.Linear(
             self.encoder_dim,
             self.args.model_args.context_dim
         )
 
-        # -- adding positional embedding
+        # adding positional embedding
         # proj_emb + pos_emb
 
-        # -- transformer encoding (maybe optional)
+        # transformer encoding (maybe optional)
         # if "landmarks" in modality:
 
-        # -- modality embedding
+        # modality embedding
         # emb + mod_emb
 
         # TODO: Implement Positional Encoding via PyTorch Embeddings (ask Adrian)
@@ -35,7 +35,7 @@ class CrossAttentionBlock(torch.nn.Module):
         super().__init__()
         self.args = args
 
-        # -- cross attention module
+        # cross attention module
         self.cross_attn = PreNorm(
             self.args.model_args.latent_dim,
             Attention(
@@ -48,7 +48,7 @@ class CrossAttentionBlock(torch.nn.Module):
             context_dim = self.args.model_args.context_dim,
         )
 
-        # -- feed forward module
+        # feed forward module
         self.cross_ff = PreNorm(
             self.args.model_args.latent_dim,
             FeedForward(
@@ -89,7 +89,7 @@ class TransformerLayer(torch.nn.Module):
         super().__init__()
         self.args = args
 
-        # -- self attention module
+        # self attention module
         self.self_attn = PreNorm(
             self.args.model_args.latent_dim,
             Attention(
@@ -100,7 +100,7 @@ class TransformerLayer(torch.nn.Module):
             ),
         )
 
-        # -- feed forward module
+        # feed forward module
         self.self_ff = PreNorm(
             self.args.model_args.latent_dim,
             FeedForward(

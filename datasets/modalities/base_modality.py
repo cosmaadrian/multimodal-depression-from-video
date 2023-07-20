@@ -49,11 +49,11 @@ class Modality(object):
 
         output = np.asarray(np.split(output, self.args.n_temporal_windows, axis=0) )
 
-        # -- normalization
+        # normalization
         if 'embeddings' not in self.modality_dir:
             output = (output - np.mean(output, axis=0)) / np.std(output, axis=0)
 
-            # -- flattening last dimensions -> (windows, frames, embed_size)
+            # flattening last dimensions -> (windows, frames, embed_size)
             if 'hand' in self.modality_dir:
                 output = np.reshape(output, (output.shape[0], output.shape[1], output.shape[2] * output.shape[3] * output.shape[4]))
             else:
@@ -73,21 +73,22 @@ class Modality(object):
             np.array: normalized and padded input data (num_windows, max_num_frames, embed_size)
             np.array: mask (num_windows, max_num_frames)
         """
-        print(data.shape)
+        # print(data.shape)
         W, N, D = data.shape
         
-        # -- padding to the max length
+        # padding to the max length
         max_fps = self.args.max_audio_fps if "audio" in self.modality_dir else self.args.max_video_fps
         frame_max_length = int(self.args.seconds_per_window) * int(max_fps)
         dif_with_max = frame_max_length - N
 
         pad_data = np.pad(data, [(0,0), (0, dif_with_max), (0,0)], mode="constant", constant_values=0)
     
-        # -- computing mask
+        # computing mask
+        # TODO check if mask is correct (1 = masked, 0 = not masked ???)
         mask = np.ones((W, N))
         mask = np.pad(mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
     
         # TODO: NO-MODALITY FRAME MASK
         # TODO: NORMALIZATION
 
-        return pad_data, mask
+        return pad_data, mask.astype(bool)

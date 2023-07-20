@@ -19,6 +19,7 @@ args = define_args()
 wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
 wandb.config.update(vars(args))
 
+# TODO if seed is not set, set it to a random value
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed(args.seed)
 np.random.seed(args.seed)

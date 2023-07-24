@@ -71,8 +71,8 @@ class DVlogDataset(AcumenDataset):
 
         output = {}
         for modality in self.args.modalities.keys():
-            chunk = self.modalities[modality].read_chunk(video, start, end).astype('float32')
-            chunk, mask = self.modalities[modality].post_process(chunk)
+            chunk, no_feats_chunk_idxs = self.modalities[modality].read_chunk(video, start, end)
+            chunk, mask = self.modalities[modality].post_process(chunk, no_feats_chunk_idxs)
             output[f'modality:{modality}:data'] = chunk
             output[f'modality:{modality}:mask'] = mask
 

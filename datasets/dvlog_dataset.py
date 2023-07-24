@@ -57,7 +57,7 @@ class DVlogDataset(AcumenDataset):
         )
 
     def get_random_window(self, video):
-        video_length = float(video['duration'].replace(',', '.'))
+        video_length = float(video['duration'])
         window_length = self.args.n_temporal_windows * self.args.seconds_per_window
 
         start = random.randint(0, int(video_length) - window_length)

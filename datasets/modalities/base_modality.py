@@ -1,3 +1,4 @@
+import sys
 import glob
 import numpy as np
 
@@ -24,10 +25,8 @@ class Modality(object):
         end_frame = int(end * fps)
 
         indexes = self._indexes_from_chunkfiles(video_id)
-
+        
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
-        if len([v for v in indexes if v[1] >= end_frame]) == 0:
-            print(video_id, start_frame, end_frame)
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]
 
         files_in_window = sorted([v for v in indexes if v[0] >= min_index and v[1] <= max_index])
@@ -50,7 +49,7 @@ class Modality(object):
                 output = np.concatenate((output, data[start_index:end_index]))
 
         output = np.asarray(np.split(output, self.args.n_temporal_windows, axis=0) )
-
+        
         # normalization
         if 'embeddings' not in self.modality_dir:
             output = (output - np.mean(output, axis=0)) / np.std(output, axis=0)
@@ -88,6 +87,5 @@ class Modality(object):
         mask = np.pad(mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
 
         # TODO: NO-MODALITY FRAME MASK
-        # TODO: NORMALIZATION
 
         return pad_data, mask.astype(bool)

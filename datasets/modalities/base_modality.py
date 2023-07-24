@@ -77,11 +77,14 @@ class Modality(object):
                         relative_chunk_idx = previous_len + i
                         chunk_no_feats_idxs.append(relative_chunk_idx)
                 else:
+                    is_voice = False
                     for vad_slot in all_no_feats_idxs:
                         current_time = (start + idx) / fps
                         if current_time >= vad_slot[0] and current_time <= vad_slot[1]:
-                            relative_chunk_idx = previous_len + i
-                            chunk_no_feats_idxs.append(relative_chunk_idx)
+                            is_voice = True
+                    if not is_voice:
+                        relative_chunk_idx = previous_len + i
+                        chunk_no_feats_idxs.append(relative_chunk_idx)
 
             previous_len = len(chunk_no_feats_idxs)
 

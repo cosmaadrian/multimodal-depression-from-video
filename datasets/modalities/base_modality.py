@@ -18,7 +18,7 @@ class Modality(object):
             filepath = "voice_activity.npz"
         else:
             raise ValueError(f"Modality no identified from directory: {self.modality_dir}")
-        
+
         return np.load(f'{self.args.environment["d-vlog"]}/data/{video_id}/{filepath}')['data']
 
     def _indexes_from_chunkfiles_(self, video_id):
@@ -40,7 +40,7 @@ class Modality(object):
         end_frame = int(end * fps)
 
         indexes = self._indexes_from_chunkfiles_(video_id)
-        
+
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]
 
@@ -52,7 +52,7 @@ class Modality(object):
 
         # building temporal window
         previous_len = 0
-        chunk_no_feats_idxs = []
+        chunk_yes_feats_idxs = []
         for i, (start, end) in enumerate(files_in_window):
             data = np.load(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/{video_id}_{str(start).zfill(6)}_{str(end).zfill(6)}.npz')['data']
 
@@ -72,40 +72,41 @@ class Modality(object):
 
             # identifying no-feature frames
             for i, idx in enumerate(range(start_index, end_index)):
+
                 if "audio" not in self.modality_dir:
-                   if (start + idx) in all_no_feats_idxs:
+                    if (start + idx) not in all_no_feats_idxs:
                         relative_chunk_idx = previous_len + i
-                        chunk_no_feats_idxs.append(relative_chunk_idx)
+                        chunk_yes_feats_idxs.append(relative_chunk_idx)
                 else:
-                    is_voice = False
                     for vad_slot in all_no_feats_idxs:
                         current_time = (start + idx) / fps
                         if current_time >= vad_slot[0] and current_time <= vad_slot[1]:
-                            is_voice = True
-                    if not is_voice:
-                        relative_chunk_idx = previous_len + i
-                        chunk_no_feats_idxs.append(relative_chunk_idx)
+                            relative_chunk_idx = previous_len + i
+                            chunk_yes_feats_idxs.append(relative_chunk_idx)
+                            break
 
-            previous_len = len(chunk_no_feats_idxs)
+            previous_len = len(chunk_yes_feats_idxs)
+
+        # applying normalization
+        if 'embeddings' not in self.modality_dir:
+            if len(chunk_yes_feats_idxs) > 1:
+                # print(np.mean(output[chunk_yes_feats_idxs, ...], axis=0), np.std(output[chunk_yes_feats_idxs, ...], axis=0))
+                output[chunk_yes_feats_idxs, ...] = (output[chunk_yes_feats_idxs, ...] - np.mean(output[chunk_yes_feats_idxs, ...], axis=0)) / np.std(output[chunk_yes_feats_idxs, ...], axis=0)
 
         # splitting windows
         output = np.asarray(np.split(output, self.args.n_temporal_windows, axis=0) )
-        
-        # applying normalization
-        # if 'embeddings' not in self.modality_dir:
-        #     output = (output - np.mean(output, axis=0)) / np.std(output, axis=0)
 
         # flattening last dimensions -> (windows, frames, embed_size)
         output = np.reshape(output, (output.shape[0], output.shape[1], -1))
 
-        return output.astype('float32'), chunk_no_feats_idxs
+        return output.astype('float32'), chunk_yes_feats_idxs
 
-    def post_process(self, data, chunk_no_feats_idxs):
+    def post_process(self, data, chunk_yes_feats_idxs):
         """Post-processing input data.
 
         Args:
             data (np.array): input data (num_windows, num_frames, embed_size)
-            chunk_no_feats_idxs: list of frame indeces where features where not found
+            chunk_yes_feats_idxs: list of frame indeces where features where found
 
         Returns:
             np.array: normalized and padded input data (num_windows, max_num_frames, embed_size)
@@ -125,9 +126,11 @@ class Modality(object):
         mask = np.pad(mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
 
         # identifying frames where no features where detected
-        for idx in chunk_no_feats_idxs:
-            window_idx = idx // mask.shape[1]
-            frame_idx = idx % mask.shape[1]
-            mask[window_idx][frame_idx] = 0
+        flatten_max_length = int(self.args.n_temporal_windows * self.args.seconds_per_window * max_fps)
+        for idx in range(0, flatten_max_length):
+            if idx not in chunk_yes_feats_idxs:
+                window_idx = idx // mask.shape[1]
+                frame_idx = idx % mask.shape[1]
+                mask[window_idx][frame_idx] = 0
 
         return pad_data, mask.astype(bool)

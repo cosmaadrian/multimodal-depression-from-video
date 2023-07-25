@@ -12,9 +12,7 @@ class BaselineModel(torch.nn.Module):
         self.args = args
 
         # sanity checking
-        assert (self.args.n_temporal_windows == 1,
-            f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
-        )
+        assert self.args.n_temporal_windows == 1, f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
 
         # modality projection
         self.projections = torch.nn.ModuleDict()

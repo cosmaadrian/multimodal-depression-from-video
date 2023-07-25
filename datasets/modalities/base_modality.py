@@ -33,7 +33,7 @@ class Modality(object):
 
     def read_chunk(self, video, start, end):
         video_id = video["video_id"]
-        fps =  100 if "audio" in self.modality_dir else int(video["video_frame_rate"])
+        fps =  int(video["audio_frame_rate"]) if "audio" in self.modality_dir else int(video["video_frame_rate"])
 
         # finding out left and right bounds
         start_frame = int(start * fps)
@@ -92,8 +92,8 @@ class Modality(object):
         output = np.asarray(np.split(output, self.args.n_temporal_windows, axis=0) )
         
         # applying normalization
-        if 'embeddings' not in self.modality_dir:
-            output = (output - np.mean(output, axis=0)) / np.std(output, axis=0)
+        # if 'embeddings' not in self.modality_dir:
+        #     output = (output - np.mean(output, axis=0)) / np.std(output, axis=0)
 
         # flattening last dimensions -> (windows, frames, embed_size)
         output = np.reshape(output, (output.shape[0], output.shape[1], -1))
@@ -115,9 +115,8 @@ class Modality(object):
 
         # padding to the max length
         max_fps = self.args.max_audio_fps if "audio" in self.modality_dir else self.args.max_video_fps
-        frame_max_length = int(self.args.seconds_per_window) * int(max_fps)
+        frame_max_length = int(self.args.seconds_per_window * max_fps)
         dif_with_max = frame_max_length - N
-
         pad_data = np.pad(data, [(0,0), (0, dif_with_max), (0,0)], mode="constant", constant_values=0)
 
         # computing mask

@@ -20,7 +20,7 @@ class BaselineModel(torch.nn.Module):
         assert self.args.n_temporal_windows == 1, f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
 
         self.modality_encoders = torch.nn.ModuleDict({
-            modality.name: nomenclature[modality.name](args, modality)
+            modality.name: nomenclature.MODALITY_ENCODERS[modality.name](args, modality)
             for modality in self.args.modalities
         })
 
@@ -52,14 +52,17 @@ class BaselineModel(torch.nn.Module):
             modality_id = modality.name
 
             # note that temporal window dimension is squeezed
-            data = batch[f"modality:{modality_id}:data"].squeeze(1)
-            mask = batch[f"modality:{modality_id}:mask"].squeeze(1)
+            data = batch[f"modality:{modality_id}:data"]
+            mask = batch[f"modality:{modality_id}:mask"]
+
+            data = data.squeeze(1)
+            mask = mask.squeeze(1)
 
             # Pre-modelling modality
             data = self.modality_encoders[modality_id](data, mask)
 
             # adding modality specific embedding
-            data = data + self.modality_embeddings(modality2id[modality_id])
+            data = data + self.modality_embeddings(torch.tensor(modality2id[modality_id]).to(data.device))
 
             all_modality_data.append(data)
             all_modality_mask.append(mask)

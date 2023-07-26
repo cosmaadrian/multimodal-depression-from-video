@@ -26,8 +26,8 @@ class DVlogDataset(AcumenDataset):
         self.df['gender'] = self.df['gender'].apply(lambda x: 0 if x == 'f' else 1)
 
         self.modalities = {
-            modality: self.nomenclature.MODALITIES[modality](args = self.args)
-            for modality in self.args.modalities.keys()
+            modality.name: self.nomenclature.MODALITIES[modality.name](args = self.args)
+            for modality in self.args.modalities
         }
 
         # TODO read the file with the face and voice intervals
@@ -74,11 +74,11 @@ class DVlogDataset(AcumenDataset):
         start, end = self.get_random_window(video)
 
         output = {}
-        for modality in self.args.modalities.keys():
-            chunk, no_feats_chunk_idxs = self.modalities[modality].read_chunk(video, start, end)
-            chunk, mask = self.modalities[modality].post_process(chunk, no_feats_chunk_idxs)
-            output[f'modality:{modality}:data'] = chunk
-            output[f'modality:{modality}:mask'] = mask
+        for modality in self.args.modalities:
+            chunk, no_feats_chunk_idxs = self.modalities[modality.name].read_chunk(video, start, end)
+            chunk, mask = self.modalities[modality.name].post_process(chunk, no_feats_chunk_idxs)
+            output[f'modality:{modality.name}:data'] = chunk
+            output[f'modality:{modality.name}:mask'] = mask
 
         output['labels'] = video['label']
         output['gender'] = video['gender']

@@ -30,6 +30,7 @@ losses:
     args:
       num_classes: 2
 
+# set "seed: -1" if you want it to be random
 seed: 42
 
 # TODO sensitivity test
@@ -38,21 +39,20 @@ seconds_per_window: 2
 max_audio_fps: 100
 max_video_fps: 30
 
-# modality: input_dim
 modalities:
   - name: audio_embeddings
+    input_dim: 256
     model_args:
-      input_dim: 256
       latent_dim: 256
 
-  - name: audio_embeddings
+  - name: face_embeddings
+    input_dim: 256
     model_args:
-      input_dim: 256
       latent_dim: 256
 
   - name: face_landmarks
+    input_dim: 204
     model_args:
-      input_dim: 256
       latent_dim: 256
       num_layers: 2
       self_attn_num_heads: 4
@@ -61,8 +61,8 @@ modalities:
       layer_dropout_rate: 0.0
 
   - name: hand_landmarks
+    input_dim: 105
     model_args:
-      input_dim: 210
       latent_dim: 256
       num_layers: 2
       self_attn_num_heads: 4
@@ -71,8 +71,8 @@ modalities:
       layer_dropout_rate: 0.0
 
   - name: body_landmarks
+    input_dim: 165
     model_args:
-      input_dim: 165
       latent_dim: 256
       num_layers: 2
       self_attn_num_heads: 4

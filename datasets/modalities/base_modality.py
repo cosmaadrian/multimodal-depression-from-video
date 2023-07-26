@@ -14,7 +14,9 @@ class Modality(object):
         if video_id in self.chunk_cache:
             return self.chunk_cache[video_id]
 
-        chunk_files = glob.glob(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/*.npz')
+        file_name = f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/*.npz'
+        chunk_files = glob.glob(file_name)
+
         indexes = [(int(chunk_file.split('/')[-1].split('.')[0].split('_')[-2]), int(chunk_file.split('/')[-1].split('.')[0].split('_')[-1])) for chunk_file in chunk_files]
         self.chunk_cache[video_id] = indexes
 
@@ -87,7 +89,7 @@ class Modality(object):
 
         # flattening last dimensions -> (windows, frames, embed_size)
         # TODO hands not ok
-        # output = np.reshape(output, (output.shape[0], output.shape[1], -1))
+        output = np.reshape(output, (output.shape[0], output.shape[1], -1))
 
         return output.astype('float32'), chunk_yes_feats_idxs
 

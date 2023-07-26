@@ -25,7 +25,7 @@ class AudioEmbeddings(Modality):
     def __init__(self, args):
         super().__init__(args)
         self.modality_dir = 'audio_pase_embeddings'
-        self.modality_dir = 'voice_activity.npz'
+        self.modality_mask_file = 'voice_activity.npz'
 
 class FaceEmbeddings(Modality):
     def __init__(self, args):

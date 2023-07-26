@@ -4,7 +4,7 @@ from einops.layers.torch import Reduce
 
 from .lucidrains_perceiver import PreNorm, Attention, FeedForward
 
-class ModalityEncoderBlock(torch.nn.Module):
+class FaceModalityEncoder(torch.nn.Module):
     def __init__(self, modalityID, args):
         super().__init__()
         self.args = args

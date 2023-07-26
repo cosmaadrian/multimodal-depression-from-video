@@ -6,6 +6,8 @@ from .repeat import repeat
 from .perceiver_blocks import TransformerLayer
 from lib.model_extra import MultiHead, ModelOutput
 
+from constants import modality2id
+
 class BaselineModel(torch.nn.Module):
     def __init__(self, args):
         super().__init__()
@@ -16,15 +18,28 @@ class BaselineModel(torch.nn.Module):
 
         # modality projection
         self.projections = torch.nn.ModuleDict()
+
         for modalityID in self.args.modalities.keys():
             self.projections[modalityID] = torch.nn.Linear(
                 self.args.modalities[modalityID],
                 self.args.model_args.latent_dim,
             )
 
+        self.modality_encoders = torch.nn.ModuleDict({
+
+        })
+
         # positional and modality embeddings
         self.positional_embeddings = torch.nn.ModuleDict()
-        self.modality_embeddings = torch.nn.ModuleDict()
+
+        self.modality_embeddings = torch.nn.Embedding(
+            len(self.args.modalities.keys()), self.args.model_args.latent_dim,
+        )
+
+        self.hand_embeddings = torch.nn.Embedding(
+            2, self.args.model_args.latent_dim // 2,
+        )
+
         for modalityID in self.args.modalities.keys():
             max_fps = self.args.max_audio_fps if "audio" in modalityID else args.max_video_fps
             max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
@@ -32,21 +47,6 @@ class BaselineModel(torch.nn.Module):
             self.positional_embeddings[modalityID] = torch.nn.Embedding(
                 max_length, self.args.model_args.latent_dim,
             )
-
-            self.modality_embeddings[modalityID] = torch.nn.Embedding(
-                max_length, self.args.model_args.latent_dim,
-            )
-
-            # TODO: Before projection a reshape should be done to distinguish one hand from another but ...
-            if "hand" in modalityID:
-                self.hands_frontier = self.args.model_args.latent_dim // 2
-                # special left- and right-hand modality embeddings
-                self.left_hand_embedding = torch.nn.Embedding(
-                    max_length, self.hands_frontier,
-                )
-                self.right_hand_embedding = torch.nn.Embedding(
-                    max_length, self.hands_frontier,
-                )
 
         # transformer block
         self.transformer_block = repeat(
@@ -67,6 +67,7 @@ class BaselineModel(torch.nn.Module):
         # processing the different modalities
         all_modality_data = []
         all_modality_mask = []
+
         for modalityID in self.args.modalities.keys():
             max_fps = self.args.max_audio_fps if "audio" in modalityID else self.args.max_video_fps
             max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
@@ -82,8 +83,11 @@ class BaselineModel(torch.nn.Module):
             # adding positional embedding
             data = data + self.positional_embeddings[modalityID](time_steps)
 
+            # modality encoding
+            # TODO: add stuff
+
             # adding modality embedding
-            data = data + self.modality_embeddings[modalityID](time_steps)
+            data = data + self.modality_embeddings(modality2id[modalityID])
 
             # adding special left- and right-hand embeddings
             if modalityID == "hand_landmarks":

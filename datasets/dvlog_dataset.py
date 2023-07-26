@@ -30,6 +30,8 @@ class DVlogDataset(AcumenDataset):
             for modality in self.args.modalities.keys()
         }
 
+        # TODO read the file with the face and voice intervals
+
     def __len__(self):
         return len(self.df.index)
 
@@ -57,6 +59,8 @@ class DVlogDataset(AcumenDataset):
         )
 
     def get_random_window(self, video):
+        # TODO use the file with the face and voice intervals to get windows with at least one face and one voice
+
         video_length = float(video['duration'])
         window_length = self.args.n_temporal_windows * self.args.seconds_per_window
 
@@ -80,3 +84,5 @@ class DVlogDataset(AcumenDataset):
         output['gender'] = video['gender']
 
         return output
+
+# TODO DVlogDatasetEvaluation to get windows in order

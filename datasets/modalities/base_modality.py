@@ -61,31 +61,33 @@ class Modality(object):
 
             # identifying no-feature frames
             for i, idx in enumerate(range(start_index, end_index)):
-
-                if "audio" not in self.modality_dir:
-                    if (start + idx) not in all_no_feats_idxs:
-                        relative_chunk_idx = previous_len + i
-                        chunk_yes_feats_idxs.append(relative_chunk_idx)
-                else:
+                if "audio" in self.modality_dir:
                     for vad_slot in all_no_feats_idxs:
                         current_time = (start + idx) / fps
                         if current_time >= vad_slot[0] and current_time <= vad_slot[1]:
                             relative_chunk_idx = previous_len + i
                             chunk_yes_feats_idxs.append(relative_chunk_idx)
                             break
+                        continue
+
+                if (start + idx) not in all_no_feats_idxs:
+                    relative_chunk_idx = previous_len + i
+                    chunk_yes_feats_idxs.append(relative_chunk_idx)
 
             previous_len = len(chunk_yes_feats_idxs)
 
         # applying normalization
         if 'embeddings' not in self.modality_dir:
             if len(chunk_yes_feats_idxs) > 1:
+                # TODO double check
                 output[chunk_yes_feats_idxs, ...] = (output[chunk_yes_feats_idxs, ...] - np.mean(output[chunk_yes_feats_idxs, ...], axis=0)) / np.std(output[chunk_yes_feats_idxs, ...], axis=0)
 
         # splitting windows
         output = np.asarray(np.split(output, self.args.n_temporal_windows, axis=0) )
 
         # flattening last dimensions -> (windows, frames, embed_size)
-        output = np.reshape(output, (output.shape[0], output.shape[1], -1))
+        # TODO hands not ok
+        # output = np.reshape(output, (output.shape[0], output.shape[1], -1))
 
         return output.astype('float32'), chunk_yes_feats_idxs
 
@@ -101,6 +103,7 @@ class Modality(object):
             np.array: mask (num_windows, max_num_frames)
         """
         W, N, D = data.shape
+        # flatten
 
         # padding to the max length
         max_fps = self.args.max_audio_fps if "audio" in self.modality_dir else self.args.max_video_fps
@@ -110,6 +113,7 @@ class Modality(object):
 
         # computing mask
         # TODO check if mask is correct (1 = masked, 0 = not masked ???)
+
         mask = np.ones((W, N))
         mask = np.pad(mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
 
@@ -120,5 +124,8 @@ class Modality(object):
                 window_idx = idx // mask.shape[1]
                 frame_idx = idx % mask.shape[1]
                 mask[window_idx][frame_idx] = 0
+
+        # unflatten back
+        # TODO? N = the max length of the temporal window
 
         return pad_data, mask.astype(bool)

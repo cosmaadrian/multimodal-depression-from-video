@@ -6,6 +6,11 @@ from tqdm import tqdm
 import numpy as np
 import json
 
+
+# Majority Voting Evaluator
+
+# Temporal Video Evaluator (take final decision after processing all the video)
+
 class ClassificationEvaluator(AcumenEvaluator):
     def __init__(self, args, model, evaluator_args, logger = None):
         super(ClassificationEvaluator, self).__init__(args, model, logger = logger)

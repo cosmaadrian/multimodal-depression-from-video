@@ -8,18 +8,7 @@ class Modality(object):
         self.chunk_cache = {}
 
     def _get_no_feats_idxs_list_(self, video_id):
-        if "face" in self.modality_dir:
-            filepath = "no_face_idxs.npz"
-        elif "body" in self.modality_dir:
-            filepath = "no_body_idxs.npz"
-        elif "hand" in self.modality_dir:
-            filepath = "no_hand_idxs.npz"
-        elif "audio" in self.modality_dir:
-            filepath = "voice_activity.npz"
-        else:
-            raise ValueError(f"Modality no identified from directory: {self.modality_dir}")
-
-        return np.load(f'{self.args.environment["d-vlog"]}/data/{video_id}/{filepath}')['data']
+        return np.load(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_mask_file}')['data']
 
     def _indexes_from_chunkfiles_(self, video_id):
         if video_id in self.chunk_cache:
@@ -90,7 +79,6 @@ class Modality(object):
         # applying normalization
         if 'embeddings' not in self.modality_dir:
             if len(chunk_yes_feats_idxs) > 1:
-                # print(np.mean(output[chunk_yes_feats_idxs, ...], axis=0), np.std(output[chunk_yes_feats_idxs, ...], axis=0))
                 output[chunk_yes_feats_idxs, ...] = (output[chunk_yes_feats_idxs, ...] - np.mean(output[chunk_yes_feats_idxs, ...], axis=0)) / np.std(output[chunk_yes_feats_idxs, ...], axis=0)
 
         # splitting windows

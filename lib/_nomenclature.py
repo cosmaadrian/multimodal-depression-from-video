@@ -32,6 +32,9 @@ NOMENCLATURE = easydict.EasyDict({
 
 	'MODALITIES': {
 	},
+	'MODALITY_ENCODERS': {
+
+	},
 })
 
 
@@ -40,7 +43,7 @@ import nomenclature
 
 # Merging with user stuff.
 
-for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS', 'MODALITIES', 'LOSSES']:
+for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS', 'MODALITIES', 'LOSSES', 'MODALITY_ENCODERS']:
 	if actor_type not in nomenclature.__dict__:
 		continue
 

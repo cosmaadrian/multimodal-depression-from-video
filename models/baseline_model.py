@@ -6,6 +6,7 @@ from .repeat import repeat
 from .perceiver_blocks import TransformerLayer
 from lib.model_extra import MultiHead, ModelOutput
 
+from .modality_encoders import NoOpEncoder, HandLandmarkEncoder, LandmarkEncoder
 from constants import modality2id
 
 class BaselineModel(torch.nn.Module):
@@ -13,40 +14,19 @@ class BaselineModel(torch.nn.Module):
         super().__init__()
         self.args = args
 
+        from lib import nomenclature
+
         # sanity checking
         assert self.args.n_temporal_windows == 1, f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
 
-        # modality projection
-        self.projections = torch.nn.ModuleDict()
-
-        for modalityID in self.args.modalities.keys():
-            self.projections[modalityID] = torch.nn.Linear(
-                self.args.modalities[modalityID],
-                self.args.model_args.latent_dim,
-            )
-
         self.modality_encoders = torch.nn.ModuleDict({
-
+            modality.name: nomenclature[modality.name](args, modality)
+            for modality in self.args.modalities
         })
 
-        # positional and modality embeddings
-        self.positional_embeddings = torch.nn.ModuleDict()
-
         self.modality_embeddings = torch.nn.Embedding(
-            len(self.args.modalities.keys()), self.args.model_args.latent_dim,
+            len(self.args.modalities), self.args.model_args.latent_dim,
         )
-
-        self.hand_embeddings = torch.nn.Embedding(
-            2, self.args.model_args.latent_dim // 2,
-        )
-
-        for modalityID in self.args.modalities.keys():
-            max_fps = self.args.max_audio_fps if "audio" in modalityID else args.max_video_fps
-            max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
-
-            self.positional_embeddings[modalityID] = torch.nn.Embedding(
-                max_length, self.args.model_args.latent_dim,
-            )
 
         # transformer block
         self.transformer_block = repeat(
@@ -68,32 +48,18 @@ class BaselineModel(torch.nn.Module):
         all_modality_data = []
         all_modality_mask = []
 
-        for modalityID in self.args.modalities.keys():
-            max_fps = self.args.max_audio_fps if "audio" in modalityID else self.args.max_video_fps
-            max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
+        for modality in self.args.modalities:
+            modality_id = modality.name
 
             # note that temporal window dimension is squeezed
-            data = batch[f"modality:{modalityID}:data"].squeeze(1)
-            mask = batch[f"modality:{modalityID}:mask"].squeeze(1)
-            time_steps = torch.arange(max_length).to(data.device)
+            data = batch[f"modality:{modality_id}:data"].squeeze(1)
+            mask = batch[f"modality:{modality_id}:mask"].squeeze(1)
 
-            # projecting input data
-            data = self.projections[modalityID](data)
+            # Pre-modelling modality
+            data = self.modality_encoders[modality_id](data, mask)
 
-            # adding positional embedding
-            data = data + self.positional_embeddings[modalityID](time_steps)
-
-            # modality encoding
-            # TODO: add stuff
-
-            # adding modality embedding
-            data = data + self.modality_embeddings(modality2id[modalityID])
-
-            # adding special left- and right-hand embeddings
-            if modalityID == "hand_landmarks":
-                # TODO: Discuss about this hands' issue
-                data[:, :, :self.hands_frontier] = data[:, :, :self.hands_frontier] + self.left_hand_embedding(time_steps)
-                data[:, :, self.hands_frontier:] = data[:, :, self.hands_frontier:] + self.right_hand_embedding(time_steps)
+            # adding modality specific embedding
+            data = data + self.modality_embeddings(modality2id[modality_id])
 
             all_modality_data.append(data)
             all_modality_mask.append(mask)

@@ -4,32 +4,6 @@ from einops.layers.torch import Reduce
 
 from .lucidrains_perceiver import PreNorm, Attention, FeedForward
 
-class FaceModalityEncoder(torch.nn.Module):
-    def __init__(self, modalityID, args):
-        super().__init__()
-        self.args = args
-        self.encoder_dim = self.args.modalities[modalityID]
-
-        # projection
-        self.encoder_block = torch.nn.Linear(
-            self.encoder_dim,
-            self.args.model_args.context_dim
-        )
-
-        # adding positional embedding
-        # proj_emb + pos_emb
-
-        # transformer encoding (maybe optional)
-        # if "landmarks" in modality:
-
-        # modality embedding
-        # emb + mod_emb
-
-        # TODO: Implement Positional Encoding via PyTorch Embeddings (ask Adrian)
-
-    def forward(self, data):
-        return self.encoder_block(data)
-
 class CrossAttentionBlock(torch.nn.Module):
     def __init__(self, args):
         super().__init__()

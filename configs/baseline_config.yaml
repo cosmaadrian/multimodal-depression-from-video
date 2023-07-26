@@ -2,6 +2,17 @@ dataset: d-vlog
 trainer: auto
 log_every: 5
 
+batch_size: 2
+accumulation_steps: 1
+
+model_checkpoint:
+  monitor_quantity: ClassificationEvaluator_acc
+  direction: up
+
+epochs: 300
+eval_every: 1
+
+
 evaluators:
   - name: classification
     args: {}
@@ -29,30 +40,45 @@ max_video_fps: 30
 
 # modality: input_dim
 modalities:
-  audio_embeddings: 256
-  face_landmarks: 204
-  hand_landmarks: 210
-  body_landmarks: 165
-  face_embeddings: 256
+  - name: audio_embeddings
+    model_args:
+      input_dim: 256
+      latent_dim: 256
 
-batch_size: 2
-accumulation_steps: 1
+  - name: audio_embeddings
+    model_args:
+      input_dim: 256
+      latent_dim: 256
 
-model_checkpoint:
-  monitor_quantity: ClassificationEvaluator_acc
-  direction: up
+  - name: face_landmarks
+    model_args:
+      input_dim: 256
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-epochs: 300
-eval_every: 1
+  - name: hand_landmarks
+    model_args:
+      input_dim: 210
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-scheduler_args:
-  start_epoch: 0
-  end_epoch: 300
-  base_lr: 0.0001
-  max_lr:  0.001
-  mode: triangular
-  step_size_up: 10
-  step_size_down: 10
+  - name: body_landmarks
+    model_args:
+      input_dim: 165
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
 model: baseline
 model_args:
@@ -63,3 +89,13 @@ model_args:
   dropout_rate: 0.1
   layer_dropout_rate: 0.0
   extracting_embeddings: false
+
+scheduler_args:
+  start_epoch: 0
+  end_epoch: 300
+  base_lr: 0.0001
+  max_lr:  0.001
+  mode: triangular
+  step_size_up: 10
+  step_size_down: 10
+

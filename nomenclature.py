@@ -9,6 +9,14 @@ DATASETS = {
     'd-vlog': datasets.DVlogDataset
 }
 
+MODALITY_ENCODERS = {
+    'hand_landmarks': models.modality_encoders.HandLandmarkEncoder,
+    'face_landmarks': models.modality_encoders.LandmarkEncoder,
+    'body_landmarks': models.modality_encoders.LandmarkEncoder,
+    'audio_embeddings': models.modality_encoders.NoOpEncoder,
+    'face_embeddings': models.modality_encoders.NoOpEncoder,
+}
+
 MODALITIES = {
     'face_landmarks': datasets.modalities.FaceLandmarks,
     'hand_landmarks': datasets.modalities.HandLandmarks,

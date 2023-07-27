@@ -2,7 +2,7 @@ dataset: d-vlog
 trainer: auto
 log_every: 5
 
-batch_size: 2
+batch_size: 16
 accumulation_steps: 1
 
 model_checkpoint:
@@ -12,10 +12,11 @@ model_checkpoint:
 epochs: 300
 eval_every: 1
 
-
 evaluators:
-  - name: classification
-    args: {}
+  - name: majority_classification
+    args:
+      num_eval_runs: 10
+
 
 heads:
   - kind: classification
@@ -30,7 +31,6 @@ losses:
     args:
       num_classes: 2
 
-# set "seed: -1" if you want it to be random
 seed: 42
 
 # TODO sensitivity test
@@ -40,47 +40,50 @@ presence_threshold: 0.5
 max_audio_fps: 100
 max_video_fps: 30
 
+# modality: input_dim
 modalities:
-      
+
   - name: audio_embeddings
-    input_dim: 256
     model_args:
+      input_dim: 256
       latent_dim: 256
 
-  - name: face_embeddings
-    input_dim: 256
+  - name: audio_embeddings
     model_args:
+      input_dim: 256
       latent_dim: 256
 
-  # - name: face_landmarks
-  #   input_dim: 204
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: face_landmarks
+    model_args:
+      input_dim: 256
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-  # - name: body_landmarks
-  #   input_dim: 165
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: body_landmarks
+    input_dim: 165
+    model_args:
+      input_dim: 210
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-  # - name: hand_landmarks
-  #   input_dim: 105
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: hand_landmarks
+    input_dim: 105
+    model_args:
+      input_dim: 165
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
 model: baseline
 model_args:

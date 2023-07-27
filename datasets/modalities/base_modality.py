@@ -12,7 +12,7 @@ class Modality(object):
         for video_id in self.df["video_id"].tolist():
             self.masks[video_id] = self._get_global_mask_(video_id)
 
-    def _get_global_mask_(self, video_id):       
+    def _get_global_mask_(self, video_id):
         # getting the total number of frames that compose the video
         all_chunk_files = sorted(os.listdir(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/'))
         video_frame_length = int(all_chunk_files[-1].split(".")[0].split("_")[-1])
@@ -30,9 +30,7 @@ class Modality(object):
         if video_id in self.chunk_cache:
             return self.chunk_cache[video_id]
 
-        file_name = f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/*.npz'
-        chunk_files = glob.glob(file_name)
-
+        chunk_files = glob.glob(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/*.npz')
         indexes = [(int(chunk_file.split('/')[-1].split('.')[0].split('_')[-2]), int(chunk_file.split('/')[-1].split('.')[0].split('_')[-1])) for chunk_file in chunk_files]
         self.chunk_cache[video_id] = indexes
 

@@ -79,7 +79,7 @@ class DVlogDataset(AcumenDataset):
 
         voice_kernel = np.ones((window_voice_frame_length,)) * (1 / window_voice_frame_length)
         voice_window_convolved = np.convolve(voice_mask, voice_kernel, mode="same")
-        
+
         # aligning voice w.r.t. the video frame rate
         aligning_idxs = np.linspace(0, voice_window_convolved.shape[0], num = face_window_presence.shape[0]).astype(np.int32)
         aligning_idxs[-1] -= 1 # implementation detail

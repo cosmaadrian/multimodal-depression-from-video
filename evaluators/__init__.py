@@ -1,1 +1,1 @@
-from .classification_evaluator import ClassificationEvaluator
+from .majority_classification_evaluator import MajorityClassificationEvaluator

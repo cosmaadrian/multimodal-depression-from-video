@@ -30,7 +30,7 @@ TRAINERS = {}
 
 import evaluators
 EVALUATORS = {
-    # TODO
-    'classification': evaluators.ClassificationEvaluator,
+    'majority_classification': evaluators.MajorityClassificationEvaluator,
+    # TODO add temporal evaluator
 }
 

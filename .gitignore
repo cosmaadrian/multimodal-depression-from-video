@@ -3,6 +3,7 @@ wandb/
 
 data/databases/D-vlog/data/
 .DS_Store
+._.
 
 configs/test_config.yaml
 test_template.py

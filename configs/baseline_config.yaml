@@ -2,7 +2,7 @@ dataset: d-vlog
 trainer: auto
 log_every: 5
 
-batch_size: 2
+batch_size: 16
 accumulation_steps: 1
 
 model_checkpoint:
@@ -12,10 +12,11 @@ model_checkpoint:
 epochs: 300
 eval_every: 1
 
-
 evaluators:
-  - name: classification
-    args: {}
+  - name: majority_classification
+    args:
+      num_eval_runs: 10
+
 
 heads:
   - kind: classification

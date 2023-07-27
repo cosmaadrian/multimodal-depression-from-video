@@ -1,4 +1,4 @@
 banamar-upv16:
   d-vlog: /home/dgimeno/phd/perceiving-depression/data/databases/D-vlog/
-  num_workers: 4
+  num_workers: 8
 

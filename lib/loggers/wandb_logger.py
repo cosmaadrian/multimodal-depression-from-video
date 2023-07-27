@@ -43,5 +43,4 @@ class WandbLogger(object):
                     log_dict[key + ':min'] = self.min_values[key]
                     log_dict[key + ':max'] = self.max_values[key]
 
-
                 wandb.log(log_dict, step = self.trainer.global_step)

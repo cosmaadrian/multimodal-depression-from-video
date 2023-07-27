@@ -16,14 +16,15 @@ from lib.forge import VersionCommand
 VersionCommand().run()
 
 args = define_args()
+
 wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
 wandb.config.update(vars(args))
 
-# TODO if seed is not set, set it to a random value
-torch.manual_seed(args.seed)
-torch.cuda.manual_seed(args.seed)
-np.random.seed(args.seed)
-random.seed(args.seed)
+if args.seed != -1:
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
 
 dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)

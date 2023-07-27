@@ -6,8 +6,6 @@ from .repeat import repeat
 from .perceiver_blocks import TransformerLayer
 from lib.model_extra import MultiHead, ModelOutput
 
-from .modality_encoders import NoOpEncoder, HandLandmarkEncoder, LandmarkEncoder
-
 class BaselineModel(torch.nn.Module):
     def __init__(self, args):
         super().__init__()
@@ -21,7 +19,7 @@ class BaselineModel(torch.nn.Module):
         self.modality_to_id = { modality.name:id for id, modality in enumerate(sorted(self.args.modalities, key = lambda x: x.name)) }
 
         self.modality_encoders = torch.nn.ModuleDict({
-            modality.name: nomenclature[modality.name](args, modality)
+            modality.name: nomenclature.MODALITY_ENCODERS[modality.name](args, modality)
             for modality in self.args.modalities
         })
 

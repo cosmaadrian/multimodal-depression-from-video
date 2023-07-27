@@ -2,7 +2,7 @@ import torch
 from einops import rearrange, repeat
 from einops.layers.torch import Reduce
 
-from .perceiver_blocks import ModalityEncoderBlock, CrossAttentionBlock, SelfAttentionBlock
+from .perceiver_blocks import CrossAttentionBlock, SelfAttentionBlock
 from lib.model_extra import MultiHead, ModelOutput
 
 class PerceiverModel(torch.nn.Module):

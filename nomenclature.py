@@ -10,11 +10,11 @@ DATASETS = {
 }
 
 MODALITY_ENCODERS = {
-    'hand_landmarks': models.modality_encoders.HandLandmarkEncoder,
-    'face_landmarks': models.modality_encoders.LandmarkEncoder,
-    'body_landmarks': models.modality_encoders.LandmarkEncoder,
-    'audio_embeddings': models.modality_encoders.NoOpEncoder,
-    'face_embeddings': models.modality_encoders.NoOpEncoder,
+    'hand_landmarks': models.HandLandmarkEncoder,
+    'face_landmarks': models.LandmarkEncoder,
+    'body_landmarks': models.LandmarkEncoder,
+    'audio_embeddings': models.NoOpEncoder,
+    'face_embeddings': models.NoOpEncoder,
 }
 
 MODALITIES = {

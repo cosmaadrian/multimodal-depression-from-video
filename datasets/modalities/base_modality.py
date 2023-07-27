@@ -40,11 +40,12 @@ class Modality(object):
         video_id = video_sample["video_id"]
         fps =  int(video_sample["audio_frame_rate"]) if "audio" in self.modality_dir else int(video_sample["video_frame_rate"])
 
+        indexes = self._indexes_from_chunkfiles_(video_id)
+        indexes = sorted(indexes, key = lambda x: x[0])
+
         # finding out left and right bounds
         start_frame = int(start_in_seconds * fps)
-        end_frame = int(end_in_seconds * fps)
-
-        indexes = self._indexes_from_chunkfiles_(video_id)
+        end_frame = min(int(end_in_seconds * fps), max(indexes, key = lambda x: x[1])[1])
 
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]

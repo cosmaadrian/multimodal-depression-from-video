@@ -33,7 +33,7 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
 
     def trainer_evaluate(self, step):
         print("Running Evaluation.")
-        results = self.evaluate(save=False, num_runs = 1)
+        results = self.evaluate(save=False, num_runs = 5)
 
         pprint.pprint(results)
 

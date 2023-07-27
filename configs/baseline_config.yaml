@@ -36,10 +36,12 @@ seed: 42
 # TODO sensitivity test
 n_temporal_windows: 1
 seconds_per_window: 2
+presence_threshold: 0.5
 max_audio_fps: 100
 max_video_fps: 30
 
 modalities:
+      
   - name: audio_embeddings
     input_dim: 256
     model_args:
@@ -60,8 +62,8 @@ modalities:
       dropout_rate: 0.1
       layer_dropout_rate: 0.0
 
-  - name: hand_landmarks
-    input_dim: 105
+  - name: body_landmarks
+    input_dim: 165
     model_args:
       latent_dim: 256
       num_layers: 2
@@ -70,8 +72,8 @@ modalities:
       dropout_rate: 0.1
       layer_dropout_rate: 0.0
 
-  - name: body_landmarks
-    input_dim: 165
+  - name: hand_landmarks
+    input_dim: 105
     model_args:
       latent_dim: 256
       num_layers: 2

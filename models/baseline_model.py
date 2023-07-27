@@ -7,7 +7,6 @@ from .perceiver_blocks import TransformerLayer
 from lib.model_extra import MultiHead, ModelOutput
 
 from .modality_encoders import NoOpEncoder, HandLandmarkEncoder, LandmarkEncoder
-from constants import modality2id
 
 class BaselineModel(torch.nn.Module):
     def __init__(self, args):
@@ -18,6 +17,9 @@ class BaselineModel(torch.nn.Module):
 
         # sanity checking
         assert self.args.n_temporal_windows == 1, f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
+
+        self.modality_to_id = { modality.name:id for id, modality in enumerate(sorted(self.args.modalities, key = lambda x: x.name)) }
+        print(self.modality_to_id)
 
         self.modality_encoders = torch.nn.ModuleDict({
             modality.name: nomenclature.MODALITY_ENCODERS[modality.name](args, modality)
@@ -62,7 +64,7 @@ class BaselineModel(torch.nn.Module):
             data = self.modality_encoders[modality_id](data, mask)
 
             # adding modality specific embedding
-            data = data + self.modality_embeddings(torch.tensor(modality2id[modality_id]).to(data.device))
+            data = data + self.modality_embeddings(torch.tensor(self.modality_to_id[modality_id]).to(data.device))
 
             all_modality_data.append(data)
             all_modality_mask.append(mask)

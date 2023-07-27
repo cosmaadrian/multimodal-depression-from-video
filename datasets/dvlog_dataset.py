@@ -31,7 +31,7 @@ class DVlogDataset(AcumenDataset):
         }
 
         self.window_second_length = int(self.args.n_temporal_windows * self.args.seconds_per_window)
-        
+
         # computing face and voice presence for each video sample
         self.face_and_voice_presences = {}
         for index, video_sample in self.df.iterrows():
@@ -48,6 +48,7 @@ class DVlogDataset(AcumenDataset):
             dataset,
             num_workers = args.environment['num_workers'],
             pin_memory = True,
+            shuffle = True,
             batch_size = args.batch_size
         )
 

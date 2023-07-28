@@ -7,4 +7,4 @@ cd ..
 # --mode run
 # --mode dryrun
 
-python main.py --name baseline-model --group test --mode run --config_file configs/baseline_config.yaml --env banamar-upv16
+python main.py --name baseline-model --group test --mode dryrun --config_file configs/baseline_config.yaml --env banamar-upv16

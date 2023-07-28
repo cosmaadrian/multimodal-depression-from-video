@@ -32,10 +32,21 @@ class DVlogDataset(AcumenDataset):
 
         self.window_second_length = int(self.args.n_temporal_windows * self.args.seconds_per_window)
 
-        # computing face and voice presence for each video sample
-        self.face_and_voice_presences = {}
-        for index, video_sample in self.df.iterrows():
-            self.face_and_voice_presences[video_sample["video_id"]] = self.compute_face_and_voice_presence(video_sample)
+        # identifying priority modalities
+        self.priority_modalities = self._priority_modalities()
+
+        # TODO Discuss this thing together
+        # special cases where samples have to be removed, since the priority modality was not found
+        if "body_landmarks" in self.priority_modalities:
+            self.df = self.df.drop(self.df[self.df["body_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
+        if "hand_landmarks" in self.priority_modalities:
+            self.df = self.df.drop(self.df[self.df["hand_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
+
+        # computing presence masks for each video sample
+        self.presence_masks = {
+            video_sample["video_id"]: self._compute_presence_mask(video_sample)
+            for idx, video_sample in self.df.iterrows()
+        }
 
     def __len__(self):
         return len(self.df.index)
@@ -64,38 +75,53 @@ class DVlogDataset(AcumenDataset):
             pin_memory = True,
         )
 
-    def compute_face_and_voice_presence(self, video_sample):
-        # loading voice and face frame-wise mask
-        voice_mask = self.modalities["audio_embeddings"].masks[video_sample["video_id"]]
-        face_mask = self.modalities["face_embeddings"].masks[video_sample["video_id"]]
+    def _priority_modalities(self):
+        modality_names = [modality.name for modality in self.args.modalities]
+        if len(self.args.modalities) == 1:
+            # mono-modality experiments
+            return [self.args.modalities[0].name]
+        else:
+            # multi-modality experiments
+            # prefence: audio_embeddings > face_embeddings > face_landmarks > body_landmarks > hand_landmarks          
+            if ("audio_embeddings" in modality_names) and ("face_embeddings" in modality_names):
+                return ["audio_embeddings", "face_embeddings"]
+            
+            if ("audio_embeddings" in modality_names) and ("face_landmarks" in modality_names):
+                return ["audio_embeddings", "face_landmarks"]
+            
+            if "audio_embeddings" in modality_names:
+                return ["audio_embeddings"]
+            
+            if "face_embeddings" in modality_names:
+                return ["face_embeddings"]
+            
+            if "face_landmarks" in modality_names:
+                return ["face_landmarks"]
+            
+            if "body_landmarks" in modality_names:
+                return ["body_landmarks"]
+            
+            raise Exception("Madonna! No modality was identified when computing the presence mask")
+            
+            # hand landmarks is the least frequent modality, so it will 
+            # never be a priority one unless in mono-modality experiments
 
-        # computing the frame length of all windows according to the corresponding frame rate
-        window_voice_frame_length = int(self.window_second_length * video_sample["audio_frame_rate"])
-        window_face_frame_length = int(self.window_second_length * video_sample["video_frame_rate"])
+    def _compute_presence_mask(self, video_sample):
+        # obtaining modality presence mask of a specific video sample
+        presence_mask = self.modalities[self.priority_modalities[0]].modality_presence_masks[video_sample["video_id"]]
+        # combining more than one modality mask: only in the case voice + face
+        for other_modality_id in self.priority_modalities[1:]:
+            other_presence_mask = self.modalities[other_modality_id].modality_presence_masks[video_sample["video_id"]]
+            presence_mask = np.logical_and(presence_mask, other_presence_mask)
 
-        # convolving the mask sequence to compute the percentage of face and voice presence in each window set
-        face_kernel = np.ones((window_face_frame_length,)) * (1 / window_face_frame_length)
-        face_window_presence = np.convolve(face_mask, face_kernel, mode="same")  > self.args.presence_threshold
-
-        voice_kernel = np.ones((window_voice_frame_length,)) * (1 / window_voice_frame_length)
-        voice_window_convolved = np.convolve(voice_mask, voice_kernel, mode="same")
-
-        # aligning voice w.r.t. the video frame rate
-        aligning_idxs = np.linspace(0, voice_window_convolved.shape[0], num = face_window_presence.shape[0]).astype(np.int32)
-        aligning_idxs[-1] -= 1 # implementation detail
-        aligned_voice_window_convolved = voice_window_convolved[aligning_idxs]
-        aligned_voice_window_presence = aligned_voice_window_convolved > self.args.presence_threshold
-
-        # combining face and voice presence
-        face_and_voice_presence = np.logical_and(face_window_presence, aligned_voice_window_presence)
-
-        return face_and_voice_presence
+        return presence_mask
 
     def get_random_window(self, video_sample):
-        face_and_voice_presence = self.face_and_voice_presences[video_sample["video_id"]]
+        # obtaining presence mask of a specific video sample   
+        presence_mask = self.presence_masks[video_sample["video_id"]]
 
         # finding a random window where both face and voice are present
-        start_index = np.random.choice(np.argwhere(face_and_voice_presence).squeeze(-1), 1)[0]
+        start_index = np.random.choice(np.argwhere(presence_mask).squeeze(-1), 1)[0]
 
         # computing window in seconds
         start_in_seconds = start_index / video_sample["video_frame_rate"]

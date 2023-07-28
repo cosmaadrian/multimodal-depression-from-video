@@ -7,24 +7,67 @@ class Modality(object):
         self.args = args
         self.chunk_cache = {}
 
-        # loading no-modality masks for each video sample
-        self.masks = {}
-        for video_id in self.df["video_id"].tolist():
-            self.masks[video_id] = self._get_global_mask_(video_id)
+        # computing the lenght in seconds covered by the temporal windows
+        self.window_second_length = int(self.args.n_temporal_windows * self.args.seconds_per_window)
 
-    def _get_global_mask_(self, video_id):
+        # building no-modality masks for each video sample
+        self.modality_masks = {
+            video_sample["video_id"]: self._get_modality_mask(video_sample)
+            for idx, video_sample in self.df.iterrows()
+        }
+
+        # building modality presence mask for each video sample
+        self.modality_presence_masks = {
+            video_sample["video_id"]: self._compute_modality_presence_mask(video_sample)
+            for idx, video_sample in self.df.iterrows()
+        }        
+
+    def _get_modality_mask(self, video_sample):
         # getting the total number of frames that compose the video
-        all_chunk_files = sorted(os.listdir(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/'))
+        all_chunk_files = sorted(os.listdir(f'{self.args.environment["d-vlog"]}/data/{video_sample["video_id"]}/{self.modality_dir}/'))
         video_frame_length = int(all_chunk_files[-1].split(".")[0].split("_")[-1])
 
         # loading frames where no modality was detected
-        no_modality_idxs = np.load(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_mask_file}')['data'].tolist()
+        no_modality_idxs = np.load(f'{self.args.environment["d-vlog"]}/data/{video_sample["video_id"]}/{self.modality_mask_file}')['data'].tolist()
 
         # constructing mask
         mask = np.ones((video_frame_length,))
         mask[no_modality_idxs] = 0.
 
         return mask
+    
+    def _compute_modality_presence_mask(self, video_sample):
+        # obtaining no-modality mask for the specifici video sample
+        modality_mask = self.modality_masks[video_sample["video_id"]]
+
+        # computing the frame length of all temporal windows according to the corresponding frame rate
+        frames_per_second = video_sample["audio_frame_rate"] if "audio" in self.modality_dir else video_sample["video_frame_rate"]
+        window_frame_length = int(self.window_second_length * frames_per_second)
+
+        # convolving the mask sequence to compute the percentage of presence in each window set
+        conv_kernel = np.ones((window_frame_length,)) * (1 / window_frame_length)
+        conv_mask = np.convolve(modality_mask, conv_kernel, mode="same")
+
+        if "audio" in self.modality_dir:
+            # aligning audio w.r.t. the video frame rate
+
+            # obtaining a video-based reference to find out the target length
+            all_chunk_files = sorted(os.listdir(f'{self.args.environment["d-vlog"]}/data/{video_sample["video_id"]}/face_emonet_embeddings/'))
+            video_frame_length_reference = int(all_chunk_files[-1].split(".")[0].split("_")[-1])
+
+            # sampling audio feature sequence w.r.t. the video-based target length
+            aligning_idxs = np.linspace(0, conv_mask.shape[0], num = video_frame_length_reference).astype(np.int32)
+            aligning_idxs[-1] -= 1 # implementation detail
+            aligned_conv_mask = conv_mask[aligning_idxs]
+
+            # presence thresholding
+            presence_mask = aligned_conv_mask > self.args.presence_threshold
+
+        else:
+            # other modalities do not need alignment
+            presence_mask = conv_mask > self.args.presence_threshold
+
+        return presence_mask
 
     def _indexes_from_chunkfiles_(self, video_id):
         if video_id in self.chunk_cache:
@@ -76,8 +119,8 @@ class Modality(object):
         # splitting into windows
         output = np.asarray( np.split(output, self.args.n_temporal_windows, axis=0) )
 
-        # obtaining no-modality presence mask
-        no_modality_mask = self.masks[video_id][start_frame:end_frame]
+        # obtaining modality mask
+        no_modality_mask = self.modality_masks[video_id][start_frame:end_frame]
         no_modality_mask = np.asarray( np.split(no_modality_mask, self.args.n_temporal_windows, axis=0) )
 
         return output.astype('float32'), no_modality_mask

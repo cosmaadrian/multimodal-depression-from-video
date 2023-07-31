@@ -10,6 +10,8 @@ class PerceiverModel(torch.nn.Module):
         super().__init__()
         self.args = args
 
+        from lib import nomenclature
+
         # initial random latent tensor
         self.latent = torch.nn.Parameter(
             torch.randn(
@@ -19,23 +21,33 @@ class PerceiverModel(torch.nn.Module):
         )
 
         # modality encoders
-        self.encoders = torch.nn.ModuleDict()
-        for modalityID in self.args.modalities.keys():
-            self.encoders[modalityID] = ModalityEncoderBlock(modalityID, self.args)
+        self.modality_to_id = { modality.name:id for id, modality in enumerate(sorted(self.args.modalities, key = lambda x: x.name)) }
+
+        self.modality_encoders = torch.nn.ModuleDict({
+            modality.name: nomenclature.MODALITY_ENCODERS[modality.name](args, modality)
+            for modality in self.args.modalities
+        })
 
         # cross attention blocks
         if not self.args.model_args.cross_attn_parameter_sharing:
-            self.cross_attn_blocks = torch.nn.ModuleDict()
-            for modalityID in self.args.modalities.keys():
-                self.cross_attn_blocks[modalityID] = CrossAttentionBlock(self.args)
+            self.cross_attn_blocks = torch.nn.ModuleDict({
+                modality.name: CrossAttentionBlock(self.args)
+                for modality in self.args.modalities
+            })
+
         else:
             self.cross_attn_blocks = CrossAttentionBlock(self.args)
+            # TODO clarifying details when adding modality embeddings
+            self.modality_embeddings = torch.nn.Embedding(
+                len(self.args.modalities), self.args.model_args.latent_dim,
+            )
 
         # self attention blocks
         if not self.args.model_args.self_attn_parameter_sharing:
-            self.self_attn_blocks = torch.nn.ModuleDict()
-            for modalityID in self.args.modalities.keys():
-                self.self_attn_blocks[modalityID] = SelfAttentionBlock(self.args)
+            self.self_attn_blocks = torch.nn.ModuleDict({
+                modality.name: SelfAttentionBlock(self.args)
+                for modality in self.args.modalities
+            })
         else:
             self.self_attn_blocks = SelfAttentionBlock(self.args)
 
@@ -51,27 +63,33 @@ class PerceiverModel(torch.nn.Module):
         latent = repeat(self.latent, "n d -> b n d", b = batch_size)
 
         # processing the different modalities
-        for modalityID in self.args.modalities.keys():
-            data = batch[f"modality:{modalityID}:data"]
-            mask = batch[f"modality:{modalityID}:mask"]
+        for modality in self.args.modalities:
+            modality_id = modality.name
 
-            # it should be done when loading the data
-            # data = rearrange(data, "b ... d -> b (...) d")
+            # permuting shape to iterate over temporal windows
+            data = batch[f"modality:{modality_id}:data"].permute(1,0,2,3)
+            mask = batch[f"modality:{modality_id}:mask"].permute(1,0,2)
 
-            # encoding modality input data
-            data = self.encoders[modalityID](data)
+            # TODO clarifying details when dealing with more than one temporal window
+            for window_data, window_mask in zip(data, mask):
 
-            # applying cross attention to obtain a more enriched latent representation
-            if isinstance(self.cross_attn_blocks, torch.nn.ModuleDict):
-                latent = self.cross_attn_blocks[modalityID](latent, context=data, mask=mask)
-            else:
-                latent = self.cross_attn_blocks(latent, context=data, mask=mask)
+                # encoding modality input data
+                window_data = self.modality_encoders[modality_id](window_data, window_mask)
 
-            # applying self attention to the enriched latent representation
-            if isinstance(self.self_attn_blocks, torch.nn.ModuleDict):
-                latent = self.self_attn_blocks[modalityID](latent)
-            else:
-                latent = self.self_attn_blocks(latent)
+                # applying cross attention to obtain a more enriched latent representation
+                if isinstance(self.cross_attn_blocks, torch.nn.ModuleDict):
+                    latent = self.cross_attn_blocks[modality_id](latent, context = window_data, mask = window_mask)
+                else:
+                    # TODO clarifying details when adding modality embeddings
+                    # adding modality embedding when sharing the cross-attention module across modalities
+                    window_data = window_data + self.modality_embeddings(torch.tensor(self.modality_to_id[modality_id]).to(window_data.device))
+                    latent = self.cross_attn_blocks(latent, context = window_data, mask = window_mask)
+
+                # applying self attention to the enriched latent representation
+                if isinstance(self.self_attn_blocks, torch.nn.ModuleDict):
+                    latent, _ = self.self_attn_blocks[modality_id](latent)
+                else:
+                    latent, _ = self.self_attn_blocks(latent)
 
         if self.args.model_args.extracting_embeddings:
             return latent

@@ -2,7 +2,7 @@ import torch
 from einops import rearrange, repeat
 from einops.layers.torch import Reduce
 
-from .repeat import repeat
+from .repeat import repeat as multi_sequential_repeat
 from .perceiver_blocks import TransformerLayer
 from lib.model_extra import MultiHead, ModelOutput
 
@@ -28,7 +28,7 @@ class BaselineModel(torch.nn.Module):
         )
 
         # transformer block
-        self.transformer_block = repeat(
+        self.transformer_block = multi_sequential_repeat(
             self.args.model_args.num_layers,
             lambda lnum: TransformerLayer(
                 self.args,

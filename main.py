@@ -59,23 +59,26 @@ checkpoint_callback_last = callbacks.ModelCheckpoint(
     filename=f'epoch={{epoch}}-{args.model_checkpoint["monitor_quantity"]}={{{args.model_checkpoint["monitor_quantity"]}:.4f}}',
 )
 
-# scheduler = torch.optim.lr_scheduler.CyclicLR(
-#     optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
-#     cycle_momentum = False,
-#     base_lr = args.scheduler_args.base_lr,
-#     mode = args.scheduler_args.mode,
-#     step_size_up = len(train_dataloader) * args.scheduler_args.step_size_up, # per epoch
-#     step_size_down = len(train_dataloader) * args.scheduler_args.step_size_down, # per epoch
-#     max_lr = args.scheduler_args.max_lr
-# )
-
-scheduler = torch.optim.lr_scheduler.OneCycleLR(
-    optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
-    max_lr = args.scheduler_args.max_lr,
-    steps_per_epoch = round(len(train_dataloader) / args.accumulation_steps),
-    epochs = args.epochs,
-    anneal_strategy = "linear",
-)
+if args.scheduler == "cyclelr":
+    scheduler = torch.optim.lr_scheduler.CyclicLR(
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
+        cycle_momentum = False,
+        base_lr = args.scheduler_args.base_lr,
+        mode = args.scheduler_args.mode,
+        step_size_up = len(train_dataloader) * args.scheduler_args.step_size_up, # per epoch
+        step_size_down = len(train_dataloader) * args.scheduler_args.step_size_down, # per epoch
+        max_lr = args.scheduler_args.max_lr
+    )
+elif args.scheduler == "onecyclelr":
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
+        max_lr = args.scheduler_args.max_lr,
+        steps_per_epoch = round(len(train_dataloader) / args.accumulation_steps),
+        epochs = args.epochs,
+        anneal_strategy = "linear",
+    )
+else:
+    raise NotImplementedError("Support only 'cyclelr' or 'onecyclelr'")
 
 lr_callback = callbacks.LambdaCallback(
     on_batch_end = lambda: scheduler.step()

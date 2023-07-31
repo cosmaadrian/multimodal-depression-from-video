@@ -50,35 +50,35 @@ modalities:
     model_args:
       latent_dim: 256
 
-  # - name: face_landmarks
-  #   input_dim: 204
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: face_landmarks
+    input_dim: 204
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-  # - name: body_landmarks
-  #   input_dim: 165
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: body_landmarks
+    input_dim: 165
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-  # - name: hand_landmarks
-  #   input_dim: 105
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: hand_landmarks
+    input_dim: 105
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
 model: baseline
 model_args:

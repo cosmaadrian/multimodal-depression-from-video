@@ -82,33 +82,34 @@ class DVlogDataset(AcumenDataset):
             return [self.args.modalities[0].name]
         else:
             # multi-modality experiments
-            # prefence: audio_embeddings > face_embeddings > face_landmarks > body_landmarks > hand_landmarks          
+            # prefence: audio_embeddings > face_embeddings > face_landmarks > body_landmarks > hand_landmarks
             if ("audio_embeddings" in modality_names) and ("face_embeddings" in modality_names):
                 return ["audio_embeddings", "face_embeddings"]
-            
+
             if ("audio_embeddings" in modality_names) and ("face_landmarks" in modality_names):
                 return ["audio_embeddings", "face_landmarks"]
-            
+
             if "audio_embeddings" in modality_names:
                 return ["audio_embeddings"]
-            
+
             if "face_embeddings" in modality_names:
                 return ["face_embeddings"]
-            
+
             if "face_landmarks" in modality_names:
                 return ["face_landmarks"]
-            
+
             if "body_landmarks" in modality_names:
                 return ["body_landmarks"]
-            
+
             raise Exception("Madonna! No modality was identified when computing the presence mask")
-            
-            # hand landmarks is the least frequent modality, so it will 
+
+            # hand landmarks is the least frequent modality, so it will
             # never be a priority one unless in mono-modality experiments
 
     def _compute_presence_mask(self, video_sample):
         # obtaining modality presence mask of a specific video sample
         presence_mask = self.modalities[self.priority_modalities[0]].modality_presence_masks[video_sample["video_id"]]
+
         # combining more than one modality mask: only in the case voice + face
         for other_modality_id in self.priority_modalities[1:]:
             other_presence_mask = self.modalities[other_modality_id].modality_presence_masks[video_sample["video_id"]]
@@ -117,7 +118,7 @@ class DVlogDataset(AcumenDataset):
         return presence_mask
 
     def get_random_window(self, video_sample):
-        # obtaining presence mask of a specific video sample   
+        # obtaining presence mask of a specific video sample
         presence_mask = self.presence_masks[video_sample["video_id"]]
 
         # finding a random window where both face and voice are present
@@ -142,6 +143,8 @@ class DVlogDataset(AcumenDataset):
 
         output['labels'] = video_sample['label']
         output['gender'] = video_sample['gender']
+        output['audio_frame_rate'] = video_sample['audio_frame_rate']
+        output['video_frame_rate'] = video_sample['video_frame_rate']
 
         return output
 

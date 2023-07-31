@@ -62,6 +62,9 @@ class PerceiverModel(torch.nn.Module):
         batch_size = batch["labels"].shape[0]
         latent = repeat(self.latent, "n d -> b n d", b = batch_size)
 
+        # kind of a hack, but almost always the ratio is 1 / 3
+        framerate_ratio = batch['video_frame_rate'] / batch['audio_frame_rate']
+
         # processing the different modalities
         for modality in self.args.modalities:
             modality_id = modality.name
@@ -74,9 +77,11 @@ class PerceiverModel(torch.nn.Module):
             for window_data, window_mask in zip(data, mask):
 
                 # encoding modality input data
-                window_data = self.modality_encoders[modality_id](window_data, window_mask)
+                window_data = self.modality_encoders[modality_id](window_data, window_mask, framerate_ratio = framerate_ratio)
 
                 # applying cross attention to obtain a more enriched latent representation
+
+                # TODO don't use isinstance(.)
                 if isinstance(self.cross_attn_blocks, torch.nn.ModuleDict):
                     latent = self.cross_attn_blocks[modality_id](latent, context = window_data, mask = window_mask)
                 else:
@@ -86,6 +91,7 @@ class PerceiverModel(torch.nn.Module):
                     latent = self.cross_attn_blocks(latent, context = window_data, mask = window_mask)
 
                 # applying self attention to the enriched latent representation
+                # TODO don't use isinstance(.)
                 if isinstance(self.self_attn_blocks, torch.nn.ModuleDict):
                     latent, _ = self.self_attn_blocks[modality_id](latent)
                 else:

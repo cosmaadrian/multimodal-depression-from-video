@@ -2,9 +2,20 @@ dataset: d-vlog
 trainer: auto
 log_every: 5
 
+batch_size: 8
+accumulation_steps: 1
+
+model_checkpoint:
+  monitor_quantity: MajorityClassificationEvaluator_f1
+  direction: up
+
+epochs: 50
+eval_every: 1
+
 evaluators:
-  - name: classification
-    args: {}
+  - name: majority_classification
+    args:
+      num_eval_runs: 10
 
 heads:
   - kind: classification
@@ -22,32 +33,69 @@ losses:
 seed: 42
 
 # TODO sensitivity test
-n_temporal_windows: 4
-seconds_per_window: 2
-
+n_temporal_windows: 1
+seconds_per_window: 5
+presence_threshold: 0.5
 max_audio_fps: 100
 max_video_fps: 30
 
-# modality: input_dim
 modalities:
-  audio_embeddings: 256
-  face_landmarks: 204
-  hand_landmarks: 210
-  body_landmarks: 165
-  face_embeddings: 256
+  - name: audio_embeddings
+    input_dim: 256
+    model_args:
+      latent_dim: 256
 
-max_video_fps: 30
-max_audio_fps: 100
+  - name: face_embeddings
+    input_dim: 256
+    model_args:
+      latent_dim: 256
 
-batch_size: 2
-accumulation_steps: 1
+  # - name: face_landmarks
+  #   input_dim: 204
+  #   model_args:
+  #     latent_dim: 256
+  #     num_layers: 2
+  #     self_attn_num_heads: 4
+  #     self_attn_dim_head: 64
+  #     dropout_rate: 0.1
+  #     layer_dropout_rate: 0.0
 
-model_checkpoint:
-  monitor_quantity: ClassificationEvaluator_acc
-  direction: up
+  # - name: body_landmarks
+  #   input_dim: 165
+  #   model_args:
+  #     latent_dim: 256
+  #     num_layers: 2
+  #     self_attn_num_heads: 4
+  #     self_attn_dim_head: 64
+  #     dropout_rate: 0.1
+  #     layer_dropout_rate: 0.0
 
-epochs: 300
-eval_every: 1
+  # - name: hand_landmarks
+  #   input_dim: 105
+  #   model_args:
+  #     latent_dim: 256
+  #     num_layers: 2
+  #     self_attn_num_heads: 4
+  #     self_attn_dim_head: 64
+  #     dropout_rate: 0.1
+  #     layer_dropout_rate: 0.0
+
+model: perceiver
+model_args:
+  latent_num: 16
+  latent_dim: 128
+  context_dim: 256
+  cross_attn_num_heads: 4
+  cross_attn_dim_head: 64
+  cross_attn_parameter_sharing: false
+  self_attn_block_type: "transformer"
+  self_attn_num_layers: 12
+  self_attn_num_heads: 4
+  self_attn_dim_head: 64
+  dropout_rate: 0.1
+  layer_dropout_rate: 0.0
+  self_attn_parameter_sharing: true
+  extracting_embeddings: false
 
 scheduler_args:
   start_epoch: 0
@@ -58,18 +106,3 @@ scheduler_args:
   step_size_up: 10
   step_size_down: 10
 
-model: perceiver
-model_args:
-  latent_num: 16
-  latent_dim: 256
-  context_dim: 512
-  cross_attn_num_heads: 4
-  cross_attn_dim_head: 64
-  cross_attn_parameter_sharing: false
-  self_attn_block_type: "transformer"
-  self_attn_num_layers: 12
-  self_attn_num_heads: 4
-  self_attn_dim_head: 64
-  dropout_rate: 0.1
-  self_attn_parameter_sharing: true
-  extracting_embeddings: false

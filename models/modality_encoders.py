@@ -18,16 +18,16 @@ class NoOpEncoder(torch.nn.Module):
         )
 
         max_fps = self.args.max_audio_fps if "audio" in self.modality_encoder_args.name else self.args.max_video_fps
-        self.max_length = max_fps * self.args.seconds_per_window # it should be only one temporal window
+        self.max_data_length = max_fps * self.args.n_temporal_windows * self.args.seconds_per_window
 
         self.positional_embeddings = torch.nn.Embedding(
-            self.max_length, self.modality_encoder_args.model_args.latent_dim,
+            self.max_data_length, self.modality_encoder_args.model_args.latent_dim,
         )
 
     def forward(self, data, mask):
         data = self.projection(data)
 
-        time_steps = torch.arange(self.max_length).to(data.device)
+        time_steps = torch.arange(self.max_data_length).to(data.device)
         data = data + self.positional_embeddings(time_steps)
 
         return data
@@ -47,8 +47,10 @@ class HandLandmarkEncoder(torch.nn.Module):
             2, self.modality_encoder_args.model_args.latent_dim,
         )
 
+
+        self.max_data_length = self.args.max_video_fps * self.args.n_temporal_windows * self.args.seconds_per_window
         self.positional_embeddings = torch.nn.Embedding(
-            self.args.max_video_fps * self.args.seconds_per_window,
+            self.max_data_length,
             self.modality_encoder_args.model_args.latent_dim,
         )
 
@@ -65,19 +67,19 @@ class HandLandmarkEncoder(torch.nn.Module):
         data = self.projection(data)
 
         # add positional embeddings
-        time_steps = torch.arange(self.args.max_video_fps * self.args.seconds_per_window).to(data.device)
+        time_steps = torch.arange(self.max_data_length).to(data.device)
         time_steps = time_steps.repeat_interleave(2)
         positions = self.positional_embeddings(time_steps)
-        positions = positions.reshape(self.args.max_video_fps * self.args.seconds_per_window, 2, self.modality_encoder_args.model_args.latent_dim)
+        positions = positions.reshape(self.max_data_length, 2, self.modality_encoder_args.model_args.latent_dim)
 
         data = data + positions
 
         # add token_types
-        hand_type_ids = torch.tensor([0, 1]).repeat(self.args.max_video_fps * self.args.seconds_per_window)
+        hand_type_ids = torch.tensor([0, 1]).repeat(self.max_data_length)
         hand_type_ids = hand_type_ids.to(data.device)
 
         hand_embeddings = self.hand_type_embeddings(hand_type_ids)
-        hand_embeddings = hand_embeddings.reshape(self.args.max_video_fps * self.args.seconds_per_window, 2, self.modality_encoder_args.model_args.latent_dim)
+        hand_embeddings = hand_embeddings.reshape(self.max_data_length, 2, self.modality_encoder_args.model_args.latent_dim)
 
         data = data + hand_embeddings
 
@@ -104,8 +106,9 @@ class LandmarkEncoder(torch.nn.Module):
             self.modality_encoder_args.model_args.latent_dim,
         )
 
+        self.max_data_length = self.args.max_video_fps * self.args.n_temporal_windows * self.args.seconds_per_window
         self.positional_embeddings = torch.nn.Embedding(
-            self.args.max_video_fps * self.args.seconds_per_window,
+            self.max_data_length,
             self.modality_encoder_args.model_args.latent_dim,
         )
 
@@ -123,7 +126,7 @@ class LandmarkEncoder(torch.nn.Module):
         data = data.view(data.shape[0], data.shape[1], -1)
         data = self.projection(data)
 
-        time_steps = torch.arange(self.args.max_video_fps * self.args.seconds_per_window).to(data.device)
+        time_steps = torch.arange(self.max_data_length).to(data.device)
         data = data + self.positional_embeddings(time_steps)
         data, _ = self.encoder(data, mask)
 

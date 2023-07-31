@@ -97,6 +97,7 @@ model_args:
   self_attn_parameter_sharing: true
   extracting_embeddings: false
 
+scheduler: "cyclelr"
 scheduler_args:
   start_epoch: 0
   end_epoch: 300

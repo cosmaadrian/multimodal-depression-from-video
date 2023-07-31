@@ -90,6 +90,7 @@ model_args:
   layer_dropout_rate: 0.0
   extracting_embeddings: false
 
+scheduler: "cyclelr"
 scheduler_args:
   start_epoch: 0
   end_epoch: 300

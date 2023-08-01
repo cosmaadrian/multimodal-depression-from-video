@@ -26,6 +26,23 @@ def load_video(video_path):
             break
     cap.release()
 
+def get_video_info(video_path):
+    """get video information.
+
+    Args:
+        video_path (str): the path where the video file is stored.
+
+    Returns:
+        tuple: (fps, frame_count, frame_width, frame_height)
+    """
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cap.release()
+    return fps, frame_count, frame_width, frame_height
+
 def landmarks_interpolate(landmarks):
     """landmarks interpolation.
 

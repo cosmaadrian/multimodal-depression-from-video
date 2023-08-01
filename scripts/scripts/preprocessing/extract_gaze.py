@@ -16,10 +16,21 @@ from ptgaze.gaze_estimator import GazeEstimator
 from ptgaze.common import Face, FacePartsName, Visualizer
 from omegaconf import DictConfig, OmegaConf
 
-def extract_gaze_from_video(videoID, config, gaze_estimator):
+def draw_gaze_vector(visualizer, face):
+    length = config.demo.gaze_visualization_length
+    visualizer.draw_3d_line(
+        face.center, face.center + length * face.gaze_vector)
+
+
+def extract_gaze_from_video(videoID, config):
+    gaze_estimator = GazeEstimator(config)
+
     # -- creating video frame generator
     video_path = os.path.join(args.video_dir, videoID+".mp4")
     frame_generator = load_video(video_path)
+
+    # face_model_3d = get_3d_face_model(config)
+    # visualizer = Visualizer(gaze_estimator.camera, face_model_3d.NOSE_INDEX)
 
     fps, frame_count, frame_width, frame_height = get_video_info(video_path)
 
@@ -45,15 +56,19 @@ def extract_gaze_from_video(videoID, config, gaze_estimator):
         for j, face in enumerate(faces):
             gaze_estimator.estimate_gaze(undistorted, face)
             gaze_seq.append(face.gaze_vector)
-            break # assume only one face per frame            
+            break # assume only one face per frame    
+
+        # visualizer.set_image(frame.copy())
+        # draw_gaze_vector(visualizer, face)
+        if len(faces) and (frame_idx + 1) % 1024 == 0:
+            print(f"Video {videoID} - frame {frame_idx}/{frame_count}")
+            # cv2.imwrite(f"test_images/{videoID}_frame_{frame_idx}.jpg", visualizer.image)        
 
         if not len(faces):
             no_gaze_indexes.append(frame_idx)
             gaze_seq.append(np.zeros(3, dtype=np.float32))
-        
-        # if (frame_idx + 1) % 100 == 0:
-        #     print(f"Video {videoID} - frame {frame_idx}/{frame_count}")
-        #     break
+            # cv2.imwrite(f"test_images/no_face_{videoID}_frame_{frame_idx}.jpg", frame)
+    
 
     #  saving computed gaze from the video
     np.savez_compressed(dst_no_gaze_indeces_path, data=np.array(no_gaze_indexes))
@@ -61,12 +76,12 @@ def extract_gaze_from_video(videoID, config, gaze_estimator):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Estimating gaze from videos.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--video-dir", type=str, default="/home/banamar/perceiving-depression/databases/D-vlog/data/videos", help="Root directory where Youtube videos are stored")
-    parser.add_argument("--landmarks-output-dir", default="/home/banamar/perceiving-depression/databases/D-vlog/data/gaze_features", type=str, help="Directory where to save the computed gaze for each video that compose the database")
-    parser.add_argument("--no-gaze-output-dir", default="/home/banamar/perceiving-depression/databases/D-vlog/data/no_gaze", type=str, help="Directory where to save the frames where no gaze were found")
+    parser.add_argument("--video-dir", type=str, default="/home/banamar/perceiving-depression/data/databases/D-vlog/data/videos", help="Root directory where Youtube videos are stored")
+    parser.add_argument("--landmarks-output-dir", default="/home/banamar/perceiving-depression/data/databases/D-vlog/data/gaze_features", type=str, help="Directory where to save the computed gaze for each video that compose the database")
+    parser.add_argument("--no-gaze-output-dir", default="/home/banamar/perceiving-depression/data/databases/D-vlog/data/no_gaze", type=str, help="Directory where to save the frames where no gaze were found")
     parser.add_argument("--mode", default="eth-xgaze", type=str, help="Mode to use for gaze estimation")
     parser.add_argument("--eth_xgaze_config_path", default="/home/banamar/pytorch_mpiigaze_demo/ptgaze/data/configs/eth-xgaze.yaml", type=str, help="Path to config file for eth-xgaze")
-    parser.add_argument('--face-detector', default='dlib', type=str, help='The method used to detect faces and find face landmarks')
+    parser.add_argument('--face-detector', default='mediapipe', type=str, help='The method used to detect faces and find face landmarks')
     parser.add_argument('--device', default='cuda', type=str, choices=['cpu', 'cuda'], help='Device used for model inference.')
     parser.add_argument('--no-screen', action='store_true', help='If specified, the video is not displayed on screen, and saved to the output directory.')
     args = parser.parse_args()
@@ -91,12 +106,11 @@ if __name__ == "__main__":
 
     # download_mpiifacegaze_model()
     download_ethxgaze_model()
-    gaze_estimator = GazeEstimator(config)
 
     # -- loading database
     videoIDs = [sample.split(".")[0] for sample in sorted(os.listdir(args.video_dir))]
 
     loop = tqdm(videoIDs)
 
-    Parallel(n_jobs=11)(delayed(extract_gaze_from_video)(video, config, gaze_estimator) for video in loop)
+    Parallel(n_jobs=6)(delayed(extract_gaze_from_video)(video, config) for video in loop)
 

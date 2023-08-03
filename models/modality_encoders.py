@@ -57,6 +57,10 @@ class HandLandmarkEncoder(torch.nn.Module):
         self.args = args
         self.modality_encoder_args = modality_encoder_args
 
+        self.batch_norm  = torch.nn.BatchNorm1d(
+            self.modality_encoder_args.input_dim,
+        )
+
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
@@ -81,6 +85,13 @@ class HandLandmarkEncoder(torch.nn.Module):
         )
 
     def forward(self, data, mask, framerate_ratio):
+        batch, time, _, _, _ = data.shape
+
+        data = data.view(batch, time * 2, -1).permute(0,2,1)
+        data = self.batch_norm(data).permute(0,2,1)
+
+        data = data.view(batch, time, 2, -1)
+
         downscale_factor = framerate_ratio
 
         data = data.view(data.shape[0], data.shape[1], 2, -1)
@@ -123,6 +134,10 @@ class LandmarkEncoder(torch.nn.Module):
         self.args = args
         self.modality_encoder_args = modality_encoder_args
 
+        self.batch_norm  = torch.nn.BatchNorm1d(
+            self.modality_encoder_args.input_dim,
+        )
+
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
@@ -141,7 +156,9 @@ class LandmarkEncoder(torch.nn.Module):
     def forward(self, data, mask, framerate_ratio):
         downscale_factor = framerate_ratio
 
-        data = data.view(data.shape[0], data.shape[1], -1)
+        data = data.view(data.shape[0], data.shape[1], -1).permute(0,2,1)
+        data = self.batch_norm(data).permute(0,2,1)
+
         data = self.projection(data)
 
         pe = fractional_positional_encoding(batch_size = data.shape[0], d_model = self.modality_encoder_args.model_args.latent_dim, length = self.max_data_length, downscale_factor = downscale_factor)

@@ -38,6 +38,10 @@ class HandLandmarkEncoder(torch.nn.Module):
         self.args = args
         self.modality_encoder_args = modality_encoder_args
 
+        self.batch_norm  = torch.nn.BatchNorm1d(
+            self.modality_encoder_args.input_dim,
+        )
+
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
@@ -63,7 +67,21 @@ class HandLandmarkEncoder(torch.nn.Module):
         )
 
     def forward(self, data, mask):
-        data = data.view(data.shape[0], data.shape[1], 2, -1)
+        """Forward pass.
+        
+        Args:
+            data (torch.Tensor): input data (batch, time, hands, landmarks, coordinates)
+            mask (torch.Tensor): mask tensor (batch, time)
+
+        Returns:
+            torch.Tensor: modality encoder output tensor (batch, time, hands, latent_dim)
+        """
+        batch, time, _, _, _ = data.shape
+
+        data = data.view(batch, time * 2, -1).permute(0,2,1)
+        data = self.batch_norm(data).permute(0,2,1)
+
+        data = data.view(batch, time, 2, -1)
         data = self.projection(data)
 
         # add positional embeddings
@@ -101,6 +119,10 @@ class LandmarkEncoder(torch.nn.Module):
         self.args = args
         self.modality_encoder_args = modality_encoder_args
 
+        self.batch_norm  = torch.nn.BatchNorm1d(
+            self.modality_encoder_args.input_dim,
+        )
+
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
@@ -123,7 +145,18 @@ class LandmarkEncoder(torch.nn.Module):
         # TODO add batch normalization?
 
     def forward(self, data, mask):
-        data = data.view(data.shape[0], data.shape[1], -1)
+        """Forward pass.
+        
+        Args:
+            data (torch.Tensor): input data (batch, time, landmarks, coordinates)
+            mask (torch.Tensor): mask tensor (batch, time)
+
+        Returns:
+            torch.Tensor: modality encoder output tensor (batch, time, latent_dim)
+        """
+        data = data.view(data.shape[0], data.shape[1], -1).permute(0,2,1)
+        data = self.batch_norm(data).permute(0,2,1)
+
         data = self.projection(data)
 
         time_steps = torch.arange(self.max_data_length).to(data.device)

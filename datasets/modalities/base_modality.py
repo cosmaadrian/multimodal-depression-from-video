@@ -149,7 +149,6 @@ class Modality(object):
         pad_data = np.pad(flatten_data, [(0,0), (0, dif_with_max), (0,0)], mode="constant", constant_values=0)
 
         # computing mask
-        # TODO check if mask is correct (1 = masked, 0 = not masked ???)
         no_modality_mask = np.pad(no_modality_mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
 
         padding_mask = np.ones((W, T))
@@ -161,6 +160,4 @@ class Modality(object):
         original_shape = (W, -1) + data.shape[2:]
         out_data = np.reshape(pad_data, original_shape)
 
-        # TODO? N = the max length of the temporal window
-
-        return pad_data, mask.astype(bool)
+        return out_data, mask.astype(bool)

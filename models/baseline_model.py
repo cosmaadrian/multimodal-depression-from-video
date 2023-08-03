@@ -16,7 +16,7 @@ class BaselineModel(torch.nn.Module):
         # sanity checking
         assert self.args.n_temporal_windows == 1, f"The Baseline Model only supports one temporal window, but instead it was found {self.args.n_temporal_windows} windows"
 
-        self.modality_to_id = { modality.name:id for id, modality in enumerate(sorted(self.args.modalities, key = lambda x: x.name)) }
+        self.modality_to_id = {modality.name:id for id, modality in enumerate(sorted(self.args.modalities, key = lambda x: x.name))}
 
         self.modality_encoders = torch.nn.ModuleDict({
             modality.name: nomenclature.MODALITY_ENCODERS[modality.name](args, modality)
@@ -47,6 +47,9 @@ class BaselineModel(torch.nn.Module):
         all_modality_data = []
         all_modality_mask = []
 
+        # kind of a hack, but almost always the ratio is 1 / 3
+        framerate_ratio = batch['video_frame_rate'] / batch['audio_frame_rate']
+
         for modality in self.args.modalities:
             modality_id = modality.name
 
@@ -55,7 +58,7 @@ class BaselineModel(torch.nn.Module):
             mask = batch[f"modality:{modality_id}:mask"].squeeze(1)
 
             # Pre-modelling modality
-            data = self.modality_encoders[modality_id](data, mask)
+            data = self.modality_encoders[modality_id](data, mask, framerate_ratio = framerate_ratio)
 
             # adding modality specific embedding
             data = data + self.modality_embeddings(torch.tensor(self.modality_to_id[modality_id]).to(data.device))

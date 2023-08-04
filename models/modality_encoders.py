@@ -171,7 +171,7 @@ class LandmarkEncoder(torch.nn.Module):
 class BlinkingEncoder(torch.nn.Module):
     def __init__(self, args, modality_encoder_args):
         super(BlinkingEncoder, self).__init__()
-        self.args. = args
+        self.args = args
         self.modality_encoder_args = modality_encoder_args
 
         self.blinking_embeddings = torch.nn.Embedding(

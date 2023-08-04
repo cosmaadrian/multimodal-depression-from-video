@@ -37,10 +37,10 @@ class DVlogDataset(AcumenDataset):
 
         # TODO Discuss this thing together
         # special cases where samples have to be removed, since the priority modality was not found
-        if "body_landmarks" in self.priority_modalities:
-            self.df = self.df.drop(self.df[self.df["body_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
-        if "hand_landmarks" in self.priority_modalities:
-            self.df = self.df.drop(self.df[self.df["hand_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
+        # if "body_landmarks" in self.priority_modalities:
+        #     self.df = self.df.drop(self.df[self.df["body_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
+        # if "hand_landmarks" in self.priority_modalities:
+        #     self.df = self.df.drop(self.df[self.df["hand_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
 
         # computing presence masks for each video sample
         self.presence_masks = {

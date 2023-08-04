@@ -15,6 +15,8 @@ MODALITY_ENCODERS = {
     'body_landmarks': models.LandmarkEncoder,
     'audio_embeddings': models.NoOpEncoder,
     'face_embeddings': models.NoOpEncoder,
+    'blinking_patterns': models.BlinkingEncoder,
+    'gaze_patterns': models.NoOpEncoder,
 }
 
 MODALITIES = {
@@ -23,6 +25,8 @@ MODALITIES = {
     'body_landmarks': datasets.modalities.BodyLandmarks,
     'audio_embeddings': datasets.modalities.AudioEmbeddings,
     'face_embeddings': datasets.modalities.FaceEmbeddings,
+    'blinking_patterns': datasets.modalities.BlinkingPatterns,
+    'gaze_patterns': datasets.modalities.GazePatterns,
 }
 
 import trainers

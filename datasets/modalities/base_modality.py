@@ -1,5 +1,6 @@
 import os
 import glob
+import math
 import numpy as np
 
 class Modality(object):
@@ -20,7 +21,7 @@ class Modality(object):
         self.modality_presence_masks = {
             video_sample["video_id"]: self._compute_modality_presence_mask(video_sample)
             for idx, video_sample in self.df.iterrows()
-        }        
+        }
 
     def _get_modality_mask(self, video_sample):
         # getting the total number of frames that compose the video
@@ -81,7 +82,7 @@ class Modality(object):
 
     def read_chunk(self, video_sample, start_in_seconds, end_in_seconds):
         video_id = video_sample["video_id"]
-        fps =  int(video_sample["audio_frame_rate"]) if "audio" in self.modality_dir else int(video_sample["video_frame_rate"])
+        fps =  video_sample["audio_frame_rate"] if "audio" in self.modality_dir else video_sample["video_frame_rate"]
 
         indexes = self._indexes_from_chunkfiles_(video_id)
         indexes = sorted(indexes, key = lambda x: x[0])
@@ -89,6 +90,10 @@ class Modality(object):
         # finding out left and right bounds
         start_frame = int(start_in_seconds * fps)
         end_frame = min(int(end_in_seconds * fps), max(indexes, key = lambda x: x[1])[1])
+
+        # trick for window splitting
+        start_frame = start_frame // self.args.n_temporal_windows * self.args.n_temporal_windows
+        end_frame = end_frame // self.args.n_temporal_windows * self.args.n_temporal_windows
 
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]

@@ -38,3 +38,17 @@ class FaceEmbeddings(Modality):
         self.modality_dir = 'face_emonet_embeddings'
         self.modality_mask_file = 'no_face_idxs.npz'
         super().__init__(args)
+
+class GazePatterns(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'gaze_patterns'
+        self.modality_mask_file = 'no_gaze_idxs.npz'
+        super().__init__(args)
+
+class BlinkingPatterns(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'blinking_patterns'
+        self.modality_mask_file = 'no_blink_idxs.npz'
+        super().__init__(args)

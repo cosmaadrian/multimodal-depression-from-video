@@ -167,3 +167,34 @@ class LandmarkEncoder(torch.nn.Module):
         data, _ = self.encoder(data, mask)
 
         return data
+    
+class BlinkingEncoder(torch.nn.Module):
+    def __init__(self, args, modality_encoder_args):
+        super(BlinkingEncoder, self).__init__()
+        self.args. = args
+        self.modality_encoder_args = modality_encoder_args
+
+        self.blinking_embeddings = torch.nn.Embedding(
+            2, self.modality_encoder_args.model_args.latent_dim,
+        )
+
+        self.max_data_length = self.args.max_video_fps * self.args.seconds_per_window
+        self.positional_embeddings = torch.nn.Embedding(
+            self.max_data_length,
+            self.modality_encoder_args.model_args.latent_dim,
+        )
+
+    def forward(self, data, mask, framerate_ratio):
+        downscale_factor = framerate_ratio
+
+        # obtain bliking embeddings
+        data = self.blinking_embeddings(data)
+
+        # add positional embeddings
+        pe = fractional_positional_encoding(batch_size = data.shape[0], d_model = self.modality_encoder_args.model_args.latent_dim, length = self.max_data_length, downscale_factor = downscale_factor)
+        pe = pe.to(data.device)
+        data = data + pe
+
+        return data
+
+

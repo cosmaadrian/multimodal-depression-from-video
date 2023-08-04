@@ -57,11 +57,10 @@ class PerceiverModel(torch.nn.Module):
         # classification layer
         self.classification_layer = MultiHead(args)
 
-    def forward(self, batch, latent = None):
+    def forward(self, batch):
         # adding batch dimension to the latent tensor
-        if latent is None:      
-            batch_size = batch["video_frame_rate"].shape[0]
-            latent = repeat(self.latent, "n d -> b n d", b = batch_size)
+        batch_size = batch["labels"].shape[0]
+        latent = repeat(self.latent, "n d -> b n d", b = batch_size)
 
         # kind of a hack, but almost always the ratio is 1 / 3
         framerate_ratio = batch['video_frame_rate'] / batch['audio_frame_rate']
@@ -70,38 +69,44 @@ class PerceiverModel(torch.nn.Module):
         for modality in self.args.modalities:
             modality_id = modality.name
 
-            # indexing the corresponding temporal window
-            data = batch[f"modality:{modality_id}:data"]
-            mask = batch[f"modality:{modality_id}:mask"]
+            # permuting shape to iterate over temporal windows
+            data = batch[f"modality:{modality_id}:data"].permute(1,0,2,3)
+            mask = batch[f"modality:{modality_id}:mask"].permute(1,0,2)
 
-            data = self.modality_encoders[modality_id](data, mask, framerate_ratio = framerate_ratio)
+            # TODO clarifying details when dealing with more than one temporal window
+            for window_data, window_mask in zip(data, mask):
 
-            # applying cross attention to obtain a more enriched latent representation
-            # TODO don't use isinstance(.)
-            if isinstance(self.cross_attn_blocks, torch.nn.ModuleDict):
-                latent = self.cross_attn_blocks[modality_id](latent, context = data, mask = mask)
-            else:
-                # adding modality embedding when sharing the cross-attention module across modalities
-                data = data + self.modality_embeddings(torch.tensor(self.modality_to_id[modality_id]).to(data.device))
-                latent = self.cross_attn_blocks(latent, context = data, mask = mask)
+                # encoding modality input data
+                window_data = self.modality_encoders[modality_id](window_data, window_mask, framerate_ratio = framerate_ratio)
 
-            # applying self attention to the enriched latent representation
-            # TODO don't use isinstance(.)
-            if isinstance(self.self_attn_blocks, torch.nn.ModuleDict):
-                latent, _ = self.self_attn_blocks[modality_id](latent)
-            else:
-                latent, _ = self.self_attn_blocks(latent)
+                # applying cross attention to obtain a more enriched latent representation
+
+                # TODO don't use isinstance(.)
+                if isinstance(self.cross_attn_blocks, torch.nn.ModuleDict):
+                    latent = self.cross_attn_blocks[modality_id](latent, context = window_data, mask = window_mask)
+                else:
+                    # TODO clarifying details when adding modality embeddings
+                    # adding modality embedding when sharing the cross-attention module across modalities
+                    window_data = window_data + self.modality_embeddings(torch.tensor(self.modality_to_id[modality_id]).to(window_data.device))
+                    latent = self.cross_attn_blocks(latent, context = window_data, mask = window_mask)
+
+                # applying self attention to the enriched latent representation
+                # TODO don't use isinstance(.)
+                if isinstance(self.self_attn_blocks, torch.nn.ModuleDict):
+                    latent, _ = self.self_attn_blocks[modality_id](latent)
+                else:
+                    latent, _ = self.self_attn_blocks(latent)
 
         if self.args.model_args.extracting_embeddings:
             return latent
 
-        # latent average and final normalization
-        avg_latent = self.final_norm(
+        # window average and final normalization
+        latent = self.final_norm(
             Reduce("b n d -> b d", "mean")(latent),
         )
 
         # applying classification
-        output = ModelOutput(representation=avg_latent)
+        output = ModelOutput(representation=latent)
 
-        return self.classification_layer(output), latent
-        
+        return self.classification_layer(output)
+

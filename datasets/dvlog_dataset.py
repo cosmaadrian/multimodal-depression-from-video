@@ -121,8 +121,17 @@ class DVlogDataset(AcumenDataset):
         # obtaining presence mask of a specific video sample
         presence_mask = self.presence_masks[video_sample["video_id"]]
 
-        # finding a random window where both face and voice are present
-        start_index = np.random.choice(np.argwhere(presence_mask).squeeze(-1), 1)[0]
+        # finding a random window where priority modalities are present
+        try:
+            start_index = np.random.choice(np.argwhere(presence_mask).squeeze(-1), 1)[0]
+        except ValueError as e:
+            print("\n\n\033[93mWARNING:\033[0m Doamne, nu-mi vine să cred! No mask covering",
+                  f"the specified presence threshold ({self.args.presence_threshold})",
+                  f"for the video sample {video_sample['video_id']}",
+                  f"was found when considering the modalities: [{','.join(self.priority_modalities)}]).",
+                  "Taking a random window with no care about presence. \033[94mPlease, consider to relax the threshold.\033[0m\n",
+            )
+            start_index = np.random.choice(np.argwhere(presence_mask == 0).squeeze(-1), 1)[0]
 
         # computing window in seconds
         start_in_seconds = start_index / video_sample["video_frame_rate"]

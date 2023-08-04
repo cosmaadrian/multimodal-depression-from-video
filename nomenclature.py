@@ -26,7 +26,9 @@ MODALITIES = {
 }
 
 import trainers
-TRAINERS = {}
+TRAINERS = {
+    'temporal': trainers.TemporalTrainer
+}
 
 import evaluators
 EVALUATORS = {

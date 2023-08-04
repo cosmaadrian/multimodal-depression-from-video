@@ -1,5 +1,5 @@
 dataset: d-vlog
-trainer: auto
+trainer: temporal
 log_every: 5
 
 batch_size: 8
@@ -33,7 +33,7 @@ losses:
 seed: 42
 
 # TODO sensitivity test
-n_temporal_windows: 1
+n_temporal_windows: 4
 seconds_per_window: 5
 presence_threshold: 0.5
 max_audio_fps: 100

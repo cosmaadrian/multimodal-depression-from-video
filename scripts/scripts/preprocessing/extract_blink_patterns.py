@@ -2,6 +2,7 @@ import os
 import sys
 import cv2
 import json
+import shutil
 from argparse import ArgumentParser
 from threading import Thread
 import numpy as np
@@ -22,12 +23,15 @@ def parse_args():
     parser = ArgumentParser()
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint',help='Checkpoint file')
+
     parser.add_argument(
-        '--root', default="/home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/videos/", help='Path to image file')
+        '--dest-root', default="./home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/blinking_patterns/", help='Directory where the numpy arrays containing the blinking patterns will be stored')
     parser.add_argument(
-        '--dest-root', default="./home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/blinking_patterns/", help='Path to image file')
+        '--dest-no-idxs-root', default="./home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/no_blink_idxs/", help='Direcotry where the numpy arrays containing the indeces where no blinking patterns where found will be stored')
     parser.add_argument(
-        '--dest-no-idxs-root', default="./home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/no_blink_idxs/", help='Path to image file')
+        '--tmp-root', default="./home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/video_frames/", help='Directory where to save temporary directories where saving the frames that composed the whole video')
+    parser.add_argument(
+        '--video-root', default="./home/dgimeno/phd/old_perceiving-depression/databases/D-vlog/old_data/videos/", help='Directory where videos are stored')
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     parser.add_argument(
@@ -64,9 +68,30 @@ def load_video(video_path):
             break
     cap.release()
 
-def blink_patterns_detection(videoID):
+def split_video_into_frames(videoID):
+    # creating temporary dir and defining the video path
+    tmp_dir = os.path.join(args.tmp_root, videoID)
+    os.makedirs(tmp_dir, exist_ok=True)
+    video_path = os.path.join(args.video_root, videoID + ".mp4")
+
+    cont = 0
+    frame_generator = load_video(video_path)
+    while True:
+        try:
+            frame = frame_generator.__next__() ## -- BGR
+        except StopIteration:
+            break
+
+        print(f"Processing frame {cont} from {videoID}", end="\r")
+        dest_path = os.path.join(tmp_dir, str(cont).zfill(6)+".png")
+        cv2.imwrite(dest_path, frame)
+        cont += 1
+
+    return tmp_dir
+
+def blink_patterns_detection(videoID, video_root_dir):
     # getting video frames
-    video_root_dir = os.path.join(args.root, videoID)
+
     imgs = sorted(os.listdir(video_root_dir))
 
     video_det_bboxes = []
@@ -83,12 +108,14 @@ def blink_patterns_detection(videoID):
 
     # processing clips
     for clip_index in range(0, clip_num):
+        print(f"Extracting blinking patterns from clip {clip_index} of {clip_num} from {videoID}", end="\r")
+
         # if it is not the last clip
         if clip_index!=clip_num-1:
             cur_clip = imgs[clip_index*stride:clip_index*stride + clip_len]
             clip_overlap = clip_len - stride
         # If it is the last clip, take the last clip_num frame backwards
-        else:   
+        else:
             cur_clip = imgs[-clip_len:]
             if (video_length-clip_len)%stride:
                 clip_overlap = clip_len - (video_length-clip_len)%stride
@@ -120,7 +147,7 @@ def blink_patterns_detection(videoID):
                 format=False,
                 **datas)
             model.stop_flops_count()
-            
+
         # performing inter-clip matching
         # if it is not the first clip
         if clip_index!=0:
@@ -141,7 +168,7 @@ def blink_patterns_detection(videoID):
             # Next, perform pre-padding foe the upcoming clip, length=clip_len-clip_overlap bbox:[0,0,0,0], blink:[0]
             next_padding_bboxes = torch.zeros([previous_person_num,clip_len-clip_overlap,5]).to(video_det_bboxes.device) 
             video_det_bboxes = torch.cat((video_det_bboxes, next_padding_bboxes),1)
-            
+
             next_padding_blinks = torch.zeros([previous_person_num,clip_len-clip_overlap,1]).to(video_det_blinks.device)
             video_det_blinks = torch.cat((video_det_blinks, next_padding_blinks),1)
 
@@ -180,7 +207,7 @@ def blink_patterns_detection(videoID):
             for index in range(0, det_assigned.shape[0]):
                 if det_assigned[index] == 0: # This new prediction result has not been processed yet and is a new id
 
-                    new_person_bboxes = det_bboxes[index, -(clip_len):, :].unsqueeze(0)  
+                    new_person_bboxes = det_bboxes[index, -(clip_len):, :].unsqueeze(0)
                     new_person_blinks = det_blinks[index, -(clip_len):, :].unsqueeze(0)
                     new_person_pre_bboxes = torch.zeros([1,video_det_bboxes.size(1)-(clip_len),5]).to(video_det_bboxes.device)
                     new_person_pre_blinks = torch.zeros([1,video_det_blinks.size(1)-(clip_len),1]).to(video_det_blinks.device)
@@ -189,10 +216,9 @@ def blink_patterns_detection(videoID):
                     new_person_blinks = torch.cat((new_person_pre_blinks, new_person_blinks), 1)
                     video_det_bboxes = torch.cat((video_det_bboxes, new_person_bboxes), 0)
                     video_det_blinks = torch.cat((video_det_blinks, new_person_blinks), 0)
-                    
+
                     det_assigned[index] = 1    # Mark the new prediction result for index = tar[1] has been processed
 
-                
         # for the first video_cilp
         else:
             det_bboxes = torch.stack(det_bboxes)
@@ -224,6 +250,7 @@ if __name__ == "__main__":
 
     eyeblink_threshold = 0.3
 
+    os.makedirs(args.tmp_root, exist_ok=True)
     os.makedirs(args.dest_root, exist_ok=True)
     os.makedirs(args.dest_no_idxs_root, exist_ok=True)
 
@@ -252,8 +279,14 @@ if __name__ == "__main__":
     person_threshold = 0.5
 
     # processing videos
-    videos = sorted(os.listdir(args.root))[args.left_index:args.right_index]
-    # videos = [line.strip() for line in open("./video_completed.txt", "r").readlines()][args.left_index:args.right_index]
+    videos = sorted([v.split(".")[0] for v in os.listdir(args.video_root)])
+    completed_videos = [line.strip() for line in open("./blink_completed.txt", "r").readlines()]
+    videos_to_process = [v for v in videos if v not in completed_videos][args.left_index:args.right_index]
 
-    for videoID in tqdm(videos):
-        blink_patterns_detection(videoID)
+    for videoID in tqdm(videos_to_process):
+        tmp_dir = split_video_into_frames(videoID)
+
+        blink_patterns_detection(videoID, tmp_dir)
+        print(f"\n Uff, {videoID} processed!")
+        shutil.rmtree(tmp_dir)
+

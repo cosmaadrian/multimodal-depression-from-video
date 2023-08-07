@@ -2,6 +2,8 @@ checkpoints/
 wandb/
 
 data/databases/D-vlog/data/
+data/databases/DAIC-WOZ/data/
+data/databases/E-DAIC-WOZ/data/
 .DS_Store
 ._.
 

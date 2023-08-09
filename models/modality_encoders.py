@@ -47,6 +47,7 @@ class NoOpEncoder(torch.nn.Module):
         downscale_factor = torch.ones((data.shape[0], )).float().to(data.device) if self.is_audio else framerate_ratio
         pe = fractional_positional_encoding(batch_size = data.shape[0], d_model = self.modality_encoder_args.model_args.latent_dim, length = self.max_data_length, downscale_factor = downscale_factor)
         pe = pe.to(data.device)
+        # print(data.shape, pe.shape)
         data = data + pe
 
         return data
@@ -188,7 +189,7 @@ class BlinkingEncoder(torch.nn.Module):
         downscale_factor = framerate_ratio
 
         # obtain bliking embeddings
-        data = self.blinking_embeddings(data)
+        data = self.blinking_embeddings(data.type(torch.int64))
 
         # add positional embeddings
         pe = fractional_positional_encoding(batch_size = data.shape[0], d_model = self.modality_encoder_args.model_args.latent_dim, length = self.max_data_length, downscale_factor = downscale_factor)

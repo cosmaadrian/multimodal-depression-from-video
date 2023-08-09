@@ -151,13 +151,13 @@ class Modality(object):
         frame_max_length = int(self.args.seconds_per_window * max_fps)
         dif_with_max = frame_max_length - T
 
-        pad_data = np.pad(flatten_data, [(0,0), (0, dif_with_max), (0,0)], mode="constant", constant_values=0)
+        pad_data = np.pad(flatten_data, [(0,0), (0, dif_with_max), (0,0)], mode="constant", constant_values=0) if dif_with_max >= 0 else flatten_data[:, :frame_max_length, :]
 
         # computing mask
-        no_modality_mask = np.pad(no_modality_mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
+        no_modality_mask = np.pad(no_modality_mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0) if dif_with_max >= 0 else no_modality_mask[:, :frame_max_length]
 
         padding_mask = np.ones((W, T))
-        padding_mask = np.pad(padding_mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0)
+        padding_mask = np.pad(padding_mask, [(0,0), (0, dif_with_max)], mode="constant", constant_values=0) if dif_with_max >= 0 else padding_mask[:, :frame_max_length]
 
         mask = np.logical_and(padding_mask, no_modality_mask)
 

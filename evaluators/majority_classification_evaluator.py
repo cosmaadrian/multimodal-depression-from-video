@@ -53,7 +53,7 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
             true_label = []
 
             with torch.no_grad():
-                for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader))):
+                for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader), colour = 'green')):
                     for key, value in batch.items():
                         if isinstance(value, torch.Tensor):
                             batch[key] = value.to(self.device)

@@ -17,6 +17,8 @@ VersionCommand().run()
 
 args = define_args()
 
+args.modalities = [modality for modality in args.modalities if modality.name in args.use_modalities]
+
 wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
 wandb.config.update(vars(args))
 

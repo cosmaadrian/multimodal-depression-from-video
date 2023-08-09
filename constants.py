@@ -1,7 +1,7 @@
 # Here you will put your constants across the project
 
-CONSTANT = 1
-
+MAX_AUDIO_FPS = 100
+MAX_VIDEO_FPS = 30
 
 modality2id = {
     "audio_embeddings": 0,

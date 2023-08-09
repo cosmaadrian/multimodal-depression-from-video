@@ -2,6 +2,7 @@ import os
 import glob
 import math
 import numpy as np
+import constants
 
 class Modality(object):
     def __init__(self, args):
@@ -36,7 +37,7 @@ class Modality(object):
         mask[no_modality_idxs] = 0.
 
         return mask
-    
+
     def _compute_modality_presence_mask(self, video_sample):
         # obtaining no-modality mask for the specifici video sample
         modality_mask = self.modality_masks[video_sample["video_id"]]
@@ -147,7 +148,7 @@ class Modality(object):
         flatten_data = np.reshape(data, (W, T, -1))
 
         # padding to the max length
-        max_fps = self.args.max_audio_fps if "audio" in self.modality_dir else self.args.max_video_fps
+        max_fps = constants.MAX_AUDIO_FPS if "audio" in self.modality_dir else constants.MAX_VIDEO_FPS
         frame_max_length = int(self.args.seconds_per_window * max_fps)
         dif_with_max = frame_max_length - T
 

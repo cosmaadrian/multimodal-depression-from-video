@@ -92,9 +92,6 @@ class PerceiverModel(torch.nn.Module):
             else:
                 latent, _ = self.self_attn_blocks(latent)
 
-        if self.args.model_args.extracting_embeddings:
-            return latent
-
         # latent average and final normalization
         avg_latent = self.final_norm(
             Reduce("b n d -> b d", "mean")(latent),

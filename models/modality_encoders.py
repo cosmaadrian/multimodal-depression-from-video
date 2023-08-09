@@ -3,6 +3,8 @@ from einops import rearrange, repeat
 from .repeat import repeat as multi_sequential_repeat
 from einops.layers.torch import Reduce
 import math
+import constants
+
 
 from .perceiver_blocks import TransformerLayer
 
@@ -38,7 +40,7 @@ class NoOpEncoder(torch.nn.Module):
 
         self.is_audio = "audio" in self.modality_encoder_args.name
 
-        max_fps = self.args.max_audio_fps if self.is_audio else self.args.max_video_fps
+        max_fps = constants.MAX_AUDIO_FPS if self.is_audio else constants.MAX_VIDEO_FPS
         self.max_data_length = max_fps * self.args.seconds_per_window
 
     def forward(self, data, mask, framerate_ratio):
@@ -71,7 +73,7 @@ class HandLandmarkEncoder(torch.nn.Module):
             2, self.modality_encoder_args.model_args.latent_dim,
         )
 
-        self.max_data_length = self.args.max_video_fps * self.args.seconds_per_window
+        self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
         self.positional_embeddings = torch.nn.Embedding(
             self.max_data_length,
             self.modality_encoder_args.model_args.latent_dim,
@@ -144,7 +146,7 @@ class LandmarkEncoder(torch.nn.Module):
             self.modality_encoder_args.model_args.latent_dim,
         )
 
-        self.max_data_length = self.args.max_video_fps * self.args.seconds_per_window
+        self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
 
         self.encoder = multi_sequential_repeat(
             self.modality_encoder_args.model_args.num_layers,
@@ -168,7 +170,7 @@ class LandmarkEncoder(torch.nn.Module):
         data, _ = self.encoder(data, mask)
 
         return data
-    
+
 class BlinkingEncoder(torch.nn.Module):
     def __init__(self, args, modality_encoder_args):
         super(BlinkingEncoder, self).__init__()
@@ -179,7 +181,7 @@ class BlinkingEncoder(torch.nn.Module):
             2, self.modality_encoder_args.model_args.latent_dim,
         )
 
-        self.max_data_length = self.args.max_video_fps * self.args.seconds_per_window
+        self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
         self.positional_embeddings = torch.nn.Embedding(
             self.max_data_length,
             self.modality_encoder_args.model_args.latent_dim,

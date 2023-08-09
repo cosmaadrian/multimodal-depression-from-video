@@ -1,122 +1,15 @@
-dataset: d-vlog
 trainer: classification
-log_every: 5
 
-batch_size: 8
-accumulation_steps: 1
+$extends$: configs/base_config.yaml
 
-model_checkpoint:
-  monitor_quantity: MajorityClassificationEvaluator_f1
-  direction: up
-
-epochs: 50
-eval_every: 1
-
-evaluators:
-  - name: majority_evaluator
-    args:
-      num_eval_runs: 10
-
-heads:
-  - kind: classification
-    name: depression
-    args:
-      num_classes: 2
-
-losses:
-  - kind: xe
-    name: depression
-    target_head: depression
-    args:
-      num_classes: 2
-
-seed: 42
-
-# TODO sensitivity test
-n_temporal_windows: 1
-seconds_per_window: 5
-presence_threshold: 0.25
-max_audio_fps: 100
-max_video_fps: 30
-
-modalities:
-  - name: audio_embeddings
-    input_dim: 256
-    model_args:
-      latent_dim: 256
-
-  - name: face_embeddings
-    input_dim: 256
-    model_args:
-      latent_dim: 256
-
-#   - name: face_landmarks
-#     input_dim: 204
-#     model_args:
-#       latent_dim: 256
-#       num_layers: 2
-#       self_attn_num_heads: 4
-#       self_attn_dim_head: 64
-#       dropout_rate: 0.1
-#       layer_dropout_rate: 0.0
-
-#   - name: body_landmarks
-#     input_dim: 165
-#     model_args:
-#       latent_dim: 256
-#       num_layers: 2
-#       self_attn_num_heads: 4
-#       self_attn_dim_head: 64
-#       dropout_rate: 0.1
-#       layer_dropout_rate: 0.0
-
-#   - name: hand_landmarks
-#     input_dim: 105
-#     model_args:
-#       latent_dim: 256
-#       num_layers: 2
-#       self_attn_num_heads: 4
-#       self_attn_dim_head: 64
-#       dropout_rate: 0.1
-#       layer_dropout_rate: 0.0
-
-  # - name: gaze_features
-  #   input_dim: 3
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
-
-  # - name: blinking_features
-  #   input_dim: 1
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+$includes$:
+  - configs/modality_config.yaml
 
 model: baseline
 model_args:
-  latent_dim: 256
-  num_layers: 6
+  latent_dim: 128
+  num_layers: 4
   self_attn_num_heads: 8
   self_attn_dim_head: 64
   dropout_rate: 0.1
   layer_dropout_rate: 0.0
-  extracting_embeddings: false
-
-scheduler: "cyclelr"
-scheduler_args:
-  start_epoch: 0
-  end_epoch: 300
-  base_lr: 0.0001
-  max_lr:  0.001
-  mode: triangular
-  step_size_up: 10
-  step_size_down: 10
-

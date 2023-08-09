@@ -70,11 +70,9 @@ class BaselineModel(torch.nn.Module):
         cat_data = torch.cat(all_modality_data, dim=1)
         cat_mask = torch.cat(all_modality_mask, dim=1)
 
+        print(cat_data.shape, cat_mask.shape)
         # applying transformer encoder
         output, _ = self.transformer_block(cat_data, cat_mask)
-
-        if self.args.model_args.extracting_embeddings:
-            return output
 
         # window average and final normalization
         output = self.final_norm(

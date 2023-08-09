@@ -1,0 +1,60 @@
+modalities:
+  - name: audio_embeddings
+    input_dim: 256
+    model_args:
+      latent_dim: 128
+
+  - name: face_embeddings
+    input_dim: 256
+    model_args:
+      latent_dim: 128
+
+  - name: face_landmarks
+    input_dim: 204
+    model_args:
+      latent_dim: 128
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: body_landmarks
+    input_dim: 165
+    model_args:
+      latent_dim: 128
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: hand_landmarks
+    input_dim: 105
+    model_args:
+      latent_dim: 128
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: gaze_features
+    input_dim: 3
+    model_args:
+      latent_dim: 128
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: blinking_features
+    input_dim: 1
+    model_args:
+      latent_dim: 128
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0

@@ -50,7 +50,7 @@ class TemporalEvaluator(AcumenEvaluator):
 
             next_video_offsets = batch['next_window_offset'].cpu().numpy()
 
-            progress_bars = {video_id: tqdm(range(total_windows), leave = False, colour="cyan") for video_id, total_windows in zip(batch['video_id'], batch['total_windows'])}
+            progress_bars = {video_id: tqdm(range(total_windows), leave = False, colour="green") for video_id, total_windows in zip(batch['video_id'], batch['total_windows'])}
 
             while not finished:
                 current_windows = {}

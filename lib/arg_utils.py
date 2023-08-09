@@ -32,17 +32,24 @@ def extend_config(cfg_path, child = None):
 def load_args(args):
     cfg = extend_config(cfg_path = f'{args.config_file}', child = None)
 
-    # TODO include
+    if cfg is None:
+        return args, cfg
 
-    if cfg is not None:
-        for key, value in cfg.items():
-            if key in args and args.__dict__[key] is not None:
-                continue
+    if '$includes$' in cfg:
+        included_cfg = {}
+        for included_cfg_path in cfg['$includes$']:
+            included_cfg = {**included_cfg, ** extend_config(cfg_path = included_cfg_path, child = None)}
 
-            if not isinstance(args, dict):
-                args.__dict__[key] = value
-            else:
-                args[key] = value
+        cfg = {**cfg, **included_cfg}
+
+    for key, value in cfg.items():
+        if key in args and args.__dict__[key] is not None:
+            continue
+
+        if not isinstance(args, dict):
+            args.__dict__[key] = value
+        else:
+            args[key] = value
 
     return args, cfg
 
@@ -97,6 +104,10 @@ def update_parser(parser, args):
             for arg_name, default_value, arg_type in new_values:
                 parser.add_argument(f'--{arg_name}', type = arg_type, default = default_value, required = False)
 
+            continue
+
+        if isinstance(value, list):
+            parser.add_argument(f'--{key}', type = type(value[0]), default = value, nargs = '+', required = False)
             continue
 
         if key == 'config_file':

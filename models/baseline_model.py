@@ -42,7 +42,7 @@ class BaselineModel(torch.nn.Module):
         # classification layer
         self.classification_layer = MultiHead(args)
 
-    def forward(self, batch):
+    def forward(self, batch, latent = None):
         # processing the different modalities
         all_modality_data = []
         all_modality_mask = []

@@ -1,1 +1,2 @@
 from .majority_classification_evaluator import MajorityClassificationEvaluator
+from .temporal_evaluator import TemporalEvaluator

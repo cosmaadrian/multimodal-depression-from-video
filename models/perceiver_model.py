@@ -59,7 +59,7 @@ class PerceiverModel(torch.nn.Module):
 
     def forward(self, batch, latent = None):
         # adding batch dimension to the latent tensor
-        if latent is None:      
+        if latent is None:
             batch_size = batch["video_frame_rate"].shape[0]
             latent = repeat(self.latent, "n d -> b n d", b = batch_size)
 
@@ -103,5 +103,8 @@ class PerceiverModel(torch.nn.Module):
         # applying classification
         output = ModelOutput(representation=avg_latent)
 
-        return self.classification_layer(output), latent
-        
+        classification_output = self.classification_layer(output)
+        classification_output['latent'] = latent
+
+        return classification_output
+

@@ -154,7 +154,61 @@ class DVlogDataset(AcumenDataset):
         output['gender'] = video_sample['gender']
         output['audio_frame_rate'] = video_sample['audio_frame_rate']
         output['video_frame_rate'] = video_sample['video_frame_rate']
+        output['start_in_seconds'] = start_in_seconds
+        output['end_in_seconds'] = end_in_seconds
 
         return output
 
-# TODO DVlogDatasetEvaluation to get windows in order
+class DVlogEvaluationDataset(DVlogDataset):
+    def __init__(self, args, kind='validation', data_transforms=None):
+        super().__init__(args, kind, data_transforms)
+
+    def get_next_window(self, video_sample, window_offset = 0):
+        # obtaining presence mask of a specific video sample
+        presence_mask = self.presence_masks[video_sample["video_id"]]
+
+        is_last = 0
+        if window_offset == len(presence_mask) - 1:
+            is_last = 1
+
+        # finding the first window where priority modalities are present
+        start_index = np.argwhere(presence_mask).squeeze(-1)[window_offset]
+
+        # computing window in seconds
+        start_in_seconds = start_index / video_sample["video_frame_rate"]
+        end_in_seconds = start_in_seconds + self.window_second_length
+
+        return start_in_seconds, end_in_seconds, is_last
+
+    def get_batch(self, idx, window_offset):
+        video_sample = self.df.iloc[idx]
+        start_in_seconds, end_in_seconds, is_last = self.get_next_window(video_sample, window_offset = window_offset)
+
+        output = {}
+        for modality in self.args.modalities:
+            chunk, no_modality_mask = self.modalities[modality.name].read_chunk(video_sample, start_in_seconds, end_in_seconds)
+            chunk, mask = self.modalities[modality.name].post_process(chunk, no_modality_mask)
+            output[f'modality:{modality.name}:data'] = chunk
+            output[f'modality:{modality.name}:mask'] = mask
+
+        output['labels'] = video_sample['label']
+        output['gender'] = video_sample['gender']
+        output['video_id'] = video_sample['video_id']
+        output['audio_frame_rate'] = video_sample['audio_frame_rate']
+        output['video_frame_rate'] = video_sample['video_frame_rate']
+        output['start_in_seconds'] = start_in_seconds
+        output['end_in_seconds'] = end_in_seconds
+        output['is_last'] = is_last
+        output['next_window_offset'] = window_offset + 1 if not is_last else 0
+
+        return output
+
+    def __getitem__(self, idx):
+        video_sample = self.df.iloc[idx]
+
+        output = {}
+        output['video_id'] = video_sample['video_id']
+        output['labels'] = video_sample['label']
+        output['next_window_offset'] = 0
+
+        return output

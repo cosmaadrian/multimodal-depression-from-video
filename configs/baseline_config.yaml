@@ -80,25 +80,25 @@ modalities:
       dropout_rate: 0.1
       layer_dropout_rate: 0.0
 
-  # - name: gaze_patterns
-  #   input_dim: 3
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: gaze_patterns
+    input_dim: 3
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
-  # - name: blinking_patterns
-  #   input_dim: 1
-  #   model_args:
-  #     latent_dim: 256
-  #     num_layers: 2
-  #     self_attn_num_heads: 4
-  #     self_attn_dim_head: 64
-  #     dropout_rate: 0.1
-  #     layer_dropout_rate: 0.0
+  - name: blinking_patterns
+    input_dim: 1
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
 
 model: baseline
 model_args:

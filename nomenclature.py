@@ -1,12 +1,13 @@
 import models
 MODELS = {
     'baseline': models.BaselineModel,
-    'perceiver': models.PerceiverModel
+    'perceiver': models.PerceiverModel,
 }
 
 import datasets
 DATASETS = {
-    'd-vlog': datasets.DVlogDataset
+    'd-vlog': datasets.DVlogDataset,
+    'd-vlog-eval': datasets.DVlogEvaluationDataset,
 }
 
 MODALITY_ENCODERS = {
@@ -31,12 +32,12 @@ MODALITIES = {
 
 import trainers
 TRAINERS = {
-    'temporal': trainers.TemporalTrainer
+    'temporal': trainers.TemporalTrainer,
 }
 
 import evaluators
 EVALUATORS = {
     'majority_classification': evaluators.MajorityClassificationEvaluator,
-    # TODO add temporal evaluator
+    'temporal': evaluators.TemporalEvaluator,
 }
 

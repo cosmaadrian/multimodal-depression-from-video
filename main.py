@@ -30,7 +30,6 @@ dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
 architecture = nomenclature.MODELS[args.model](args)
-print(architecture)
 model = nomenclature.TRAINERS[args.trainer](args, architecture)
 
 evaluators = [

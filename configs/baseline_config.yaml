@@ -1,5 +1,5 @@
 dataset: d-vlog
-trainer: auto
+trainer: classification
 log_every: 5
 
 batch_size: 8
@@ -13,7 +13,7 @@ epochs: 50
 eval_every: 1
 
 evaluators:
-  - name: majority_classification
+  - name: majority_evaluator
     args:
       num_eval_runs: 10
 

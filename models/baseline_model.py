@@ -54,8 +54,8 @@ class BaselineModel(torch.nn.Module):
             modality_id = modality.name
 
             # note that temporal window dimension is squeezed
-            data = batch[f"modality:{modality_id}:data"].squeeze(1)
-            mask = batch[f"modality:{modality_id}:mask"].squeeze(1)
+            data = batch[f"modality:{modality_id}:data"]
+            mask = batch[f"modality:{modality_id}:mask"]
 
             # Pre-modelling modality
             data = self.modality_encoders[modality_id](data, mask, framerate_ratio = framerate_ratio)
@@ -84,4 +84,7 @@ class BaselineModel(torch.nn.Module):
         # applying classification
         output = ModelOutput(representation = output)
 
-        return self.classification_layer(output)
+        model_output = self.classification_layer(output)
+        model_output['latent'] = None
+
+        return model_output

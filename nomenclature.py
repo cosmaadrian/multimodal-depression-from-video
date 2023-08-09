@@ -33,11 +33,12 @@ MODALITIES = {
 import trainers
 TRAINERS = {
     'temporal': trainers.TemporalTrainer,
+    'classification': trainers.ClassificationTrainer,
 }
 
 import evaluators
 EVALUATORS = {
-    'majority_classification': evaluators.MajorityClassificationEvaluator,
-    'temporal': evaluators.TemporalEvaluator,
+    'majority_evaluator': evaluators.MajorityClassificationEvaluator,
+    'temporal_evaluator': evaluators.TemporalEvaluator,
 }
 

@@ -1,1 +1,2 @@
 from .temporal_trainer import TemporalTrainer
+from .classification_trainer import ClassificationTrainer

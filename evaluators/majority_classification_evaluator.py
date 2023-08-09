@@ -55,7 +55,11 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
             with torch.no_grad():
                 for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader))):
                     for key, value in batch.items():
-                        batch[key] = value.to(self.device)
+                        if isinstance(value, torch.Tensor):
+                            batch[key] = value.to(self.device)
+
+                        if 'modality' in key:
+                            batch[key] = batch[key].squeeze(1)
 
                     output = self.model(batch)['depression'].probas[:, 1] # 0.0, 0.9
 

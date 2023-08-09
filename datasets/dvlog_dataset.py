@@ -18,9 +18,14 @@ class DVlogDataset(AcumenDataset):
 
         if kind == 'validation':
             self.df = pd.read_csv(f'{args.environment["d-vlog"]}/splits/validation.csv', index_col=0)
+            self.df = self.df.sort_values(by = 'duration')
 
         if kind == 'test':
             self.df = pd.read_csv(f'{args.environment["d-vlog"]}/splits/test.csv', index_col=0)
+            self.df = self.df.sort_values(by = 'duration')
+
+        if kind in ['validation', 'test']:
+            self.args.n_temporal_windows = 1
 
         self.df['label'] = self.df['label'].apply(lambda x: 0 if x == 'normal' else 1)
         self.df['gender'] = self.df['gender'].apply(lambda x: 0 if x == 'f' else 1)
@@ -152,6 +157,7 @@ class DVlogDataset(AcumenDataset):
 
         output['labels'] = video_sample['label']
         output['gender'] = video_sample['gender']
+        output['video_id'] = video_sample['video_id']
         output['audio_frame_rate'] = video_sample['audio_frame_rate']
         output['video_frame_rate'] = video_sample['video_frame_rate']
         output['start_in_seconds'] = start_in_seconds
@@ -167,22 +173,33 @@ class DVlogEvaluationDataset(DVlogDataset):
         # obtaining presence mask of a specific video sample
         presence_mask = self.presence_masks[video_sample["video_id"]]
 
-        is_last = 0
-        if window_offset == len(presence_mask) - 1:
-            is_last = 1
-
         # finding the first window where priority modalities are present
-        start_index = np.argwhere(presence_mask).squeeze(-1)[window_offset]
+        start_index = np.argwhere(presence_mask).ravel()[window_offset]
+        end_index = int(start_index + self.args.seconds_per_window * video_sample['video_frame_rate'])
+        last_window_idx = np.argwhere(presence_mask).ravel()[-1]
+
+        is_last = 0
+        if window_offset >= last_window_idx:
+            is_last = 1
+            next_window_offset = window_offset
+        else:
+            try:
+                next_window_offset = np.argwhere(((np.argwhere(presence_mask) - end_index) > 0)).ravel()[0]
+            except:
+                is_last = 1
+                next_window_offset = window_offset
 
         # computing window in seconds
         start_in_seconds = start_index / video_sample["video_frame_rate"]
-        end_in_seconds = start_in_seconds + self.window_second_length
+        end_in_seconds = start_in_seconds + self.args.seconds_per_window
 
-        return start_in_seconds, end_in_seconds, is_last
+        difference = next_window_offset - window_offset
 
-    def get_batch(self, idx, window_offset):
-        video_sample = self.df.iloc[idx]
-        start_in_seconds, end_in_seconds, is_last = self.get_next_window(video_sample, window_offset = window_offset)
+        return start_in_seconds, end_in_seconds, is_last, next_window_offset, difference, last_window_idx
+
+    def get_batch(self, video_id, window_offset):
+        video_sample = self.df[self.df['video_id'] == video_id].iloc[0]
+        start_in_seconds, end_in_seconds, is_last, next_window_offset, difference, last_window_idx = self.get_next_window(video_sample, window_offset = window_offset)
 
         output = {}
         for modality in self.args.modalities:
@@ -199,7 +216,9 @@ class DVlogEvaluationDataset(DVlogDataset):
         output['start_in_seconds'] = start_in_seconds
         output['end_in_seconds'] = end_in_seconds
         output['is_last'] = is_last
-        output['next_window_offset'] = window_offset + 1 if not is_last else 0
+        output['next_window_offset'] = next_window_offset
+        output['total_windows'] = last_window_idx
+        output['differences'] = difference
 
         return output
 
@@ -210,5 +229,6 @@ class DVlogEvaluationDataset(DVlogDataset):
         output['video_id'] = video_sample['video_id']
         output['labels'] = video_sample['label']
         output['next_window_offset'] = 0
+        output['total_windows'] = self.presence_masks[output['video_id']].sum()
 
         return output

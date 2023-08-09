@@ -63,7 +63,7 @@ class NotALightningTrainer():
             model.model = model.model.to(lib.device)
 
         try:
-            summary(self.model_hook, input_shape = self.model_hook.INPUT_SHAPE)
+            summary(self.model_hook)
         except Exception as e:
             print("::: ⚠️WARNING⚠️ could not create model summary ::: ", e)
 
@@ -90,7 +90,8 @@ class NotALightningTrainer():
                     callback.on_batch_start()
 
                 for key in data.keys():
-                    data[key] = data[key].to(lib.device)
+                    if isinstance(data[key], torch.Tensor):
+                        data[key] = data[key].to(lib.device)
 
                 # Autocast to automatically save memory with marginal loss of performance
                 with torch.cuda.amp.autocast(enabled = bool(self.args.use_amp)):

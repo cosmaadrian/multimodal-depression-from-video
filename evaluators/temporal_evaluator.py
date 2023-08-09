@@ -21,23 +21,20 @@ class TemporalEvaluator(AcumenEvaluator):
         self.nomenclature = nomenclature
 
         self.evaluator_args = evaluator_args
-        self.dataset = nomenclature.DATASETS[self.args.dataset]
+        self.dataset = nomenclature.DATASETS[self.evaluator_args.dataset]
 
         self.val_dataloader = self.dataset.val_dataloader(args, kind = 'validation')
         self.device = device
-
-        self.num_runs = self.evaluator_args.num_eval_runs
 
     def trainer_evaluate(self, step):
         print("Running Evaluation.")
         results = self.evaluate(save=False)
 
         pprint.pprint(results)
-
         return results
 
     @torch.no_grad()
-    def evaluate(self, save=True, num_runs = None):
+    def evaluate(self, save=True):
         y_preds = {}
         y_preds_proba = {}
         true_labels = {}
@@ -51,11 +48,15 @@ class TemporalEvaluator(AcumenEvaluator):
             for video_id, label in zip(batch['video_id'], batch['labels']):
                 true_labels[video_id] = label.item()
 
+            next_video_offsets = batch['next_window_offset'].cpu().numpy()
+
+            progress_bars = {video_id: tqdm(range(total_windows), leave = False, colour="cyan") for video_id, total_windows in zip(batch['video_id'], batch['total_windows'])}
+
             while not finished:
                 current_windows = {}
 
                 # Slow as fuck
-                for video_id, next_window_offset in zip(batch['video_id'], batch['next_window_offset']):
+                for video_id, next_window_offset, total_windows in zip(batch['video_id'], next_video_offsets, batch['total_windows']):
                     new_sample = self.val_dataloader.dataset.get_batch(video_id, next_window_offset)
 
                     for key, value in new_sample.items():
@@ -65,15 +66,31 @@ class TemporalEvaluator(AcumenEvaluator):
                         current_windows[key].append(value)
 
                 for key, value in current_windows.items():
-                    current_windows[key] = torch.cat(value, dim = 0).to(self.device)
+                    current_windows[key] = np.stack(value, axis = 0)
+                    if type(value[0]) == str:
+                        continue
+
+                    current_windows[key] = torch.from_numpy(current_windows[key]).to(self.device)
+
+                    if 'modality' in key:
+                        current_windows[key] = current_windows[key].squeeze(1)
+
+                # update the things
+                next_video_offsets = current_windows['next_window_offset'].cpu().numpy()
 
                 model_output = self.model(current_windows, latent = current_latents)
 
                 probas = model_output['depression'].probas[:, 1]
                 current_latents = model_output['latent']
 
-                finished_video_ids = batch['video_id'][current_windows['is_last'] == 1]
-                final_probas = probas[current_windows['is_last'] == 1]
+                finished_indexes = (current_windows['is_last'] == 1).detach().cpu().numpy()
+                finished_video_ids = [batch['video_id'][idx] for idx in np.argwhere(finished_indexes).ravel()]
+                not_finished_video_ids = [batch['video_id'][idx] for idx in np.argwhere(finished_indexes == False).ravel()]
+                not_finished_offset_differences = current_windows['differences'][finished_indexes == False].detach().cpu().numpy()
+                final_probas = probas[finished_indexes]
+
+                for video_id, difference in zip(not_finished_video_ids, not_finished_offset_differences):
+                    progress_bars[video_id].update(difference)
 
                 for video_id, proba in zip(finished_video_ids, final_probas):
                     y_preds_proba_over_time[video_id].append(proba.item())
@@ -84,7 +101,7 @@ class TemporalEvaluator(AcumenEvaluator):
                     y_preds[video_id] = proba.round().item()
                     y_preds_proba[video_id] = proba.item()
 
-                if current_windows['is_last'].sum() == len(batch['video_id']):
+                if torch.all(current_windows['is_last'] == 1):
                     finished = True
 
         exit()

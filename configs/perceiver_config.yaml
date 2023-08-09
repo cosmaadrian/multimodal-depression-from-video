@@ -13,9 +13,12 @@ epochs: 50
 eval_every: 1
 
 evaluators:
-  - name: majority_classification
+  # - name: majority_evaluator
+  #   args:
+  #     num_eval_runs: 10
+  - name: temporal_evaluator
     args:
-      num_eval_runs: 10
+      dataset: d-vlog-eval
 
 heads:
   - kind: classification

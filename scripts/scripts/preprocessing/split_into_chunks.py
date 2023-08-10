@@ -25,7 +25,8 @@ if __name__ == "__main__":
 
     nseconds = 5
     modalities = [
-        ("gaze_patterns", 25),
+        ("gaze_features", 25),
+        ("blinking_features", 25),
     ]
         # ("face_emonet_embeddings", 25)
         # ("audio_pase_embeddings", 100),
@@ -33,6 +34,8 @@ if __name__ == "__main__":
         # ("hand_landmarks", 25),
         # ("face_landmarks", 25),
     # ]
+
+    no_idxs_modalities = ['no_blink_idxs', 'no_gaze_idxs']
 
     for modality, fps in tqdm(modalities):
         frame_step = fps * nseconds
@@ -43,4 +46,14 @@ if __name__ == "__main__":
         joblib.Parallel(n_jobs=8)(
             joblib.delayed(process_video)(videoID) for videoID in videoIDs
         )
+
+    for no_idxs_folder in no_idxs_modalities:
+        no_idxs_folder_path = os.path.join(source_dir, no_idxs_folder)
+        no_idxs_videoIDs = tqdm(sorted(os.listdir(no_idxs_folder_path)), leave=False)
+
+        for videoID in no_idxs_videoIDs:
+            dest_modality_dir = os.path.join(dest_dir, videoID.replace(".npz", ""), no_idxs_folder)
+            dest_path = dest_modality_dir + ".npz"
+            np.savez_compressed(dest_path, data=np.load(os.path.join(no_idxs_folder_path, videoID))["data"])
+
 

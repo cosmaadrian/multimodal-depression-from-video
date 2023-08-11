@@ -94,9 +94,11 @@ if args.debug:
     print("[🐞DEBUG MODE🐞] Removing ModelCheckpoint ... ")
     callbacks = [lr_callback, lr_logger]
 else:
+    print("[🐞🐞🐞🐞🐞🐞] REMOVING ModelCheckpoint TO SAVE SPACE ... ")
+    print("[🐞🐞🐞🐞🐞🐞] WHEN RUNNING FINAL EXPERIMENTS ADD IT BACK!!!!!!")
     callbacks = [
-        checkpoint_callback_best,
-        checkpoint_callback_last,
+        # checkpoint_callback_best,
+        # checkpoint_callback_last,
         lr_callback,
         lr_logger,
     ]

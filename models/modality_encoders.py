@@ -1,15 +1,12 @@
 import torch
-from einops import rearrange, repeat
 from .repeat import repeat as multi_sequential_repeat
-from einops.layers.torch import Reduce
 import math
 import constants
 
-
 from .perceiver_blocks import TransformerLayer
 
+
 def fractional_positional_encoding(batch_size, d_model, length, downscale_factor):
-    # TODO probably needs double check
     pe = torch.zeros(batch_size, length, d_model).to(downscale_factor.device)
 
     position = torch.arange(0, length).unsqueeze(1).tile((batch_size, )).to(downscale_factor.device)
@@ -33,9 +30,14 @@ class NoOpEncoder(torch.nn.Module):
         self.args = args
         self.modality_encoder_args = modality_encoder_args
 
+        self.batch_norm  = torch.nn.BatchNorm1d(
+            self.modality_encoder_args.input_dim,
+        )
+
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
+            bias = False,
         )
 
         self.is_audio = "audio" in self.modality_encoder_args.name
@@ -44,12 +46,13 @@ class NoOpEncoder(torch.nn.Module):
         self.max_data_length = max_fps * self.args.seconds_per_window
 
     def forward(self, data, mask, framerate_ratio):
+        data = data.view(data.shape[0], -1, self.modality_encoder_args.input_dim)
+        data = self.batch_norm(data.permute(0, 2, 1)).permute(0, 2, 1)
         data = self.projection(data)
 
         downscale_factor = torch.ones((data.shape[0], )).float().to(data.device) if self.is_audio else framerate_ratio
         pe = fractional_positional_encoding(batch_size = data.shape[0], d_model = self.modality_encoder_args.model_args.latent_dim, length = self.max_data_length, downscale_factor = downscale_factor)
         pe = pe.to(data.device)
-        # print(data.shape, pe.shape)
         data = data + pe
 
         return data
@@ -67,6 +70,7 @@ class HandLandmarkEncoder(torch.nn.Module):
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
+            bias = False
         )
 
         self.hand_type_embeddings = torch.nn.Embedding(
@@ -74,10 +78,6 @@ class HandLandmarkEncoder(torch.nn.Module):
         )
 
         self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
-        self.positional_embeddings = torch.nn.Embedding(
-            self.max_data_length,
-            self.modality_encoder_args.model_args.latent_dim,
-        )
 
         self.encoder = multi_sequential_repeat(
             self.modality_encoder_args.model_args.num_layers,
@@ -90,8 +90,8 @@ class HandLandmarkEncoder(torch.nn.Module):
     def forward(self, data, mask, framerate_ratio):
         batch, time, _, _, _ = data.shape
 
-        data = data.view(batch, time * 2, -1).permute(0,2,1)
-        data = self.batch_norm(data).permute(0,2,1)
+        data = data.view(batch, time * 2, -1).permute(0, 2, 1)
+        data = self.batch_norm(data).permute(0, 2, 1)
 
         data = data.view(batch, time, 2, -1)
 
@@ -137,13 +137,14 @@ class LandmarkEncoder(torch.nn.Module):
         self.args = args
         self.modality_encoder_args = modality_encoder_args
 
-        self.batch_norm  = torch.nn.BatchNorm1d(
+        self.batch_norm = torch.nn.BatchNorm1d(
             self.modality_encoder_args.input_dim,
         )
 
         self.projection = torch.nn.Linear(
             self.modality_encoder_args.input_dim,
             self.modality_encoder_args.model_args.latent_dim,
+            bias = False,
         )
 
         self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
@@ -159,8 +160,8 @@ class LandmarkEncoder(torch.nn.Module):
     def forward(self, data, mask, framerate_ratio):
         downscale_factor = framerate_ratio
 
-        data = data.view(data.shape[0], data.shape[1], -1).permute(0,2,1)
-        data = self.batch_norm(data).permute(0,2,1)
+        data = data.view(data.shape[0], data.shape[1], -1).permute(0, 2, 1)
+        data = self.batch_norm(data).permute(0, 2, 1)
 
         data = self.projection(data)
 
@@ -182,16 +183,12 @@ class BlinkingEncoder(torch.nn.Module):
         )
 
         self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
-        self.positional_embeddings = torch.nn.Embedding(
-            self.max_data_length,
-            self.modality_encoder_args.model_args.latent_dim,
-        )
 
     def forward(self, data, mask, framerate_ratio):
         downscale_factor = framerate_ratio
 
         # obtain bliking embeddings
-        data = self.blinking_embeddings(data.type(torch.int64))
+        data = self.blinking_embeddings(data.type(torch.int32))
 
         # add positional embeddings
         pe = fractional_positional_encoding(batch_size = data.shape[0], d_model = self.modality_encoder_args.model_args.latent_dim, length = self.max_data_length, downscale_factor = downscale_factor)

@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+import copy
 
 class AcumenTrainer(object):
     def __init__(self, args, model):
-        self.args = args
+        self.args = self.args = copy.deepcopy(args)
         self.model = model
         self._optimizer = None
 
@@ -29,7 +30,7 @@ class AcumenTrainer(object):
 
     def training_epoch_end(self, epoch = None):
         pass
-    
+
     def training_batch_start(self, batch = None):
         pass
 

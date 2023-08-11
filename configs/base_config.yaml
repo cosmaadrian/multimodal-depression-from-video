@@ -1,5 +1,4 @@
 dataset: d-vlog
-batch_size: 512
 accumulation_steps: 1
 
 run_id: 1

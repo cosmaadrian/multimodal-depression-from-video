@@ -42,7 +42,7 @@ class TemporalTrainer(AcumenTrainer):
 
             self.log(f'train/loss:{head_name}', loss.item())
 
-        final_loss = losses / len(outputs.keys())
+        final_loss = losses
 
         self.log('train/loss:final', final_loss.item(), on_step = True)
         return final_loss

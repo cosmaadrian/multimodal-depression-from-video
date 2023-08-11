@@ -1,5 +1,5 @@
 import torch
-from einops import rearrange, repeat
+from einops import repeat
 from einops.layers.torch import Reduce
 
 from .perceiver_blocks import CrossAttentionBlock, SelfAttentionBlock

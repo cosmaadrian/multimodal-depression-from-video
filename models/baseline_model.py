@@ -1,5 +1,4 @@
 import torch
-from einops import rearrange, repeat
 from einops.layers.torch import Reduce
 
 from .repeat import repeat as multi_sequential_repeat
@@ -37,7 +36,8 @@ class BaselineModel(torch.nn.Module):
         )
 
         # final normalization layer
-        self.final_norm = torch.nn.LayerNorm(self.args.model_args.latent_dim)
+        # It's probably not necessary
+        # self.final_norm = torch.nn.LayerNorm(self.args.model_args.latent_dim)
 
         # classification layer
         self.classification_layer = MultiHead(args)
@@ -70,14 +70,14 @@ class BaselineModel(torch.nn.Module):
         cat_data = torch.cat(all_modality_data, dim=1)
         cat_mask = torch.cat(all_modality_mask, dim=1)
 
-        print(cat_data.shape, cat_mask.shape)
         # applying transformer encoder
         output, _ = self.transformer_block(cat_data, cat_mask)
 
         # window average and final normalization
-        output = self.final_norm(
-            Reduce('b n d -> b d', 'mean')(output),
-        )
+        # output = self.final_norm(
+        #     Reduce('b n d -> b d', 'mean')(output),
+        # )
+        output = Reduce('b n d -> b d', 'mean')(output)
 
         # applying classification
         output = ModelOutput(representation = output)

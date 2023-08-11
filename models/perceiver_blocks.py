@@ -1,6 +1,4 @@
 import torch
-from einops import rearrange, repeat
-from einops.layers.torch import Reduce
 
 from .repeat import repeat as multi_sequential_repeat
 from .lucidrains_perceiver import PreNorm, Attention, FeedForward
@@ -33,7 +31,6 @@ class CrossAttentionBlock(torch.nn.Module):
         )
 
     def forward(self, latent, context = None, mask = None):
-
         latent = self.cross_attn(latent, context = context, mask = mask) + latent
         latent = self.cross_ff(latent) + latent
 
@@ -58,9 +55,7 @@ class SelfAttentionBlock(torch.nn.Module):
         )
 
     def forward(self, latent, mask = None):
-
         latent, mask = self.self_attn_block(latent, mask)
-
         return latent, mask
 
 class TransformerLayer(torch.nn.Module):
@@ -89,7 +84,6 @@ class TransformerLayer(torch.nn.Module):
         )
 
     def forward(self, latent, mask = None):
-
         latent = self.self_attn(latent, mask = mask) + latent
         latent = self.self_ff(latent) + latent
 

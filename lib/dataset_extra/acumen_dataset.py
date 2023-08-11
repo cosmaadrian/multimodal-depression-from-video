@@ -1,9 +1,10 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
+import copy
 
 class AcumenDataset(Dataset):
     def __init__(self, args, kind = 'train', data_transforms = None):
-        self.args = args
+        self.args = copy.deepcopy(args)
         self.kind = kind
         self.data_transforms = data_transforms
 

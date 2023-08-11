@@ -7,7 +7,7 @@ $includes$:
 
 model: baseline
 model_args:
-  latent_dim: 128
+  latent_dim: 256
   num_layers: 4
   self_attn_num_heads: 8
   self_attn_dim_head: 64

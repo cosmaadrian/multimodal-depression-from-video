@@ -1,7 +1,9 @@
 import yaml
 import pprint
+from easydict import EasyDict
 
-import nomenclature
+from lib import nomenclature
+from lib import device
 from lib.arg_utils import define_args
 from lib.utils import load_model
 from lib.loggers import NoLogger
@@ -14,7 +16,9 @@ args = define_args(
     ])
 
 with open(args.eval_config, 'rt') as f:
-    eval_cfg = yaml.load(f, Loader = yaml.FullLoader)
+    eval_cfg = EasyDict(yaml.load(f, Loader = yaml.FullLoader))
+
+args.modalities = [modality for modality in args.modalities if modality.name in args.use_modalities]
 
 architecture = nomenclature.MODELS[args.model](args)
 
@@ -27,7 +31,7 @@ state_dict = {
 architecture.load_state_dict(state_dict)
 architecture.eval()
 architecture.train(False)
-architecture.to(nomenclature.device)
+architecture.to(device)
 
 evaluators = [
     nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args, logger = NoLogger())

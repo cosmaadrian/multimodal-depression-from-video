@@ -92,8 +92,11 @@ class TemporalEvaluator(AcumenEvaluator):
                 for video_id, difference in zip(not_finished_video_ids, not_finished_offset_differences):
                     progress_bars[video_id].update(difference)
 
+                for video_id, proba in zip(batch['video_id'], probas.cpu().numpy()):
+                    if video_id in not_finished_video_ids:
+                        y_preds_proba_over_time[video_id].append(proba.item())
+
                 for video_id, proba in zip(finished_video_ids, final_probas):
-                    y_preds_proba_over_time[video_id].append(proba.item())
 
                     if video_id in y_preds:
                         continue
@@ -101,30 +104,23 @@ class TemporalEvaluator(AcumenEvaluator):
                     y_preds[video_id] = proba.round().item()
                     y_preds_proba[video_id] = proba.item()
 
+                    y_preds_proba_over_time[video_id].append(proba.item()) # append the last one
+
                 if torch.all(current_windows['is_last'] == 1):
                     finished = True
 
-        exit()
-        y_preds.append(y_pred)
-        y_preds_proba.append(y_pred_proba)
-        true_labels.append(true_label)
-
-        y_preds = np.array(y_preds)
-        y_preds_proba = np.array(y_preds_proba)
-        true_labels = np.array(true_labels)
-
-        y_preds_voted = stats.mode(y_preds, axis = 0).mode[0]
-        true_labels = stats.mode(true_labels, axis = 0).mode[0]
-        y_preds_proba = y_preds_proba.mean(axis=0)
+        y_preds = np.array(list(y_preds.values()))
+        y_preds_proba = np.array(list(y_preds_proba.values()))
+        true_labels = np.array(list(true_labels.values()))
 
         fpr, tpr, thresholds = metrics.roc_curve(
             true_labels, y_preds_proba, pos_label=1
         )
-        acc = metrics.accuracy_score(true_labels, y_preds_voted)
+        acc = metrics.accuracy_score(true_labels, y_preds)
         auc = metrics.auc(fpr, tpr)
-        precision = metrics.precision_score(true_labels, y_preds_voted)
-        recall = metrics.recall_score(true_labels, y_preds_voted)
-        f1 = metrics.f1_score(true_labels, y_preds_voted)
+        precision = metrics.precision_score(true_labels, y_preds)
+        recall = metrics.recall_score(true_labels, y_preds)
+        f1 = metrics.f1_score(true_labels, y_preds)
 
         results_for_logging = {
             "f1": [f1],
@@ -147,8 +143,11 @@ class TemporalEvaluator(AcumenEvaluator):
 
         if save:
             pd.DataFrame.from_dict(results_for_logging).to_csv(
-                f"results/{self.args.output_dir}/{self.args.group}:{self.args.name}.csv",
+                f"results/{self.args.output_dir}/temporal-evaluator:{self.args.group}:{self.args.name}.csv",
                 index=False,
             )
+
+            with open(f"results/{self.args.output_dir}/temporal-evaluator:{self.args.group}:{self.args.name}:over-time.json", 'w') as f:
+                json.dump(y_preds_proba_over_time, f, indent=4)
 
         return actual_results

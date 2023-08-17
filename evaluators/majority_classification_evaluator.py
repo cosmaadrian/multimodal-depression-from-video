@@ -8,6 +8,7 @@ import json
 from scipy import stats
 from sklearn import metrics
 import pandas as pd
+from collections import defaultdict
 
 import pprint
 
@@ -44,6 +45,8 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
         y_preds_proba = []
         true_labels = []
 
+        y_preds_proba_over_runs = defaultdict(list)
+
         if num_runs is None:
             num_runs = self.num_runs
 
@@ -69,6 +72,9 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
                     y_pred.extend(np.round(preds))
                     y_pred_proba.extend(preds)
                     true_label.extend(labels)
+
+                    for video_id, proba in zip(batch['video_id'], preds):
+                            y_preds_proba_over_runs[video_id].append(proba.item())
 
             y_preds.append(y_pred)
             y_preds_proba.append(y_pred_proba)
@@ -121,8 +127,11 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
 
         if save:
             pd.DataFrame.from_dict(results_for_logging).to_csv(
-                f"results/{self.args.output_dir}/{self.args.group}:{self.args.name}.csv",
+                f"results/{self.args.output_dir}/majority-evaluator:{self.args.group}:{self.args.name}.csv",
                 index=False,
             )
+
+            with open(f"results/{self.args.output_dir}/majority-evaluator:{self.args.group}:{self.args.name}:over-runs.json", "w") as f:
+                json.dump(y_preds_proba_over_runs, f, indent=4)
 
         return actual_results

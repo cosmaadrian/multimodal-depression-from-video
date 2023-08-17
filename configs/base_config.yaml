@@ -2,7 +2,8 @@ dataset: d-vlog
 accumulation_steps: 1
 
 run_id: 1
-seed: 42
+seed: -1
+
 log_every: 5
 epochs: 300
 eval_every: 1

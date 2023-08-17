@@ -15,7 +15,8 @@ class ModelCheckpoint(Callback):
             dirpath = 'checkpoints/',
             filename="checkpoint",
             save_best_only = True,
-            start_counting_at = 0
+            start_counting_at = 0,
+            actually_save = True
         ):
 
         self.args = args
@@ -27,6 +28,7 @@ class ModelCheckpoint(Callback):
         self.dirpath = dirpath
         self.filename = filename
         self.save_best_only = save_best_only
+        self.actually_save = actually_save
 
         self.previous_best = None
         self.previous_best_path = None
@@ -62,10 +64,14 @@ class ModelCheckpoint(Callback):
             previous_optimizer_path = self.previous_best_path + '.optim.ckpt'
             previous_model_path = self.previous_best_path + '.model.ckpt'
 
-            os.unlink(previous_model_path)
-            os.unlink(previous_optimizer_path)
+            if self.actually_save:
+                os.unlink(previous_model_path)
+                os.unlink(previous_optimizer_path)
 
-        print(f"[{self.name}] Saving model to: {path}")
+        if self.actually_save:
+            print(f"[{self.name}] Saving model to: {path}")
+        else:
+            print(f"[{self.name}] (NOT really) Saving model to: {path}")
 
         os.makedirs(self.dirpath, exist_ok = True)
 
@@ -80,5 +86,6 @@ class ModelCheckpoint(Callback):
 
             self.saved_config = True
 
-        torch.save(self.trainer.model_hook.state_dict(), path + '.model.ckpt')
-        torch.save(self.trainer.optimizer.state_dict(),path + '.optim.ckpt')
+        if self.actually_save:
+            torch.save(self.trainer.model_hook.state_dict(), path + '.model.ckpt')
+            torch.save(self.trainer.optimizer.state_dict(),path + '.optim.ckpt')

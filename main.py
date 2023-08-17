@@ -19,7 +19,13 @@ args = define_args()
 
 args.modalities = [modality for modality in args.modalities if modality.name in args.use_modalities]
 
-wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
+while True:
+    try:
+        wandb.init(project = 'perceiving-depression', group = args.group, entity = 'perceiving-depression')
+        break
+    except Exception as e:
+        print(f"Wandb failed to initialize (Reason: {e}), retrying ... ")
+
 wandb.config.update(vars(args))
 
 if args.seed != -1:
@@ -92,25 +98,24 @@ lr_logger = callbacks.LambdaCallback(
 
 if args.debug:
     print("[🐞DEBUG MODE🐞] Removing ModelCheckpoint ... ")
-    callbacks = [lr_callback, lr_logger]
+    checkpoint_callback_best.actually_save = False
+    checkpoint_callback_last.actually_save = False
 else:
     print("[🐞🐞🐞🐞🐞🐞] REMOVING ModelCheckpoint TO SAVE SPACE ... ")
     print("[🐞🐞🐞🐞🐞🐞] WHEN RUNNING FINAL EXPERIMENTS ADD IT BACK!!!!!!")
-    callbacks = [
-        # checkpoint_callback_best,
-        # checkpoint_callback_last,
-        lr_callback,
-        lr_logger,
-    ]
+    checkpoint_callback_best.actually_save = False
+    checkpoint_callback_last.actually_save = False
+
+callbacks = [
+    checkpoint_callback_best,
+    checkpoint_callback_last,
+    lr_callback,
+    lr_logger,
+]
 
 trainer = NotALightningTrainer(
     args = args,
-    callbacks = [
-        checkpoint_callback_best,
-        checkpoint_callback_last,
-        lr_callback,
-        lr_logger
-    ],
+    callbacks = callbacks,
     logger=wandb_logger,
 )
 

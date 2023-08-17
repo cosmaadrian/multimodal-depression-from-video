@@ -82,6 +82,15 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
         true_labels = stats.mode(true_labels, axis = 0).mode[0]
         y_preds_proba = y_preds_proba.mean(axis=0)
 
+        print("True Labels:")
+        print(true_labels)
+
+        print("Voted Predictions:")
+        print(y_preds_voted)
+
+        print("Predictions Proba (Mean):")
+        print(y_preds_proba)
+
         fpr, tpr, thresholds = metrics.roc_curve(
             true_labels, y_preds_proba, pos_label=1
         )

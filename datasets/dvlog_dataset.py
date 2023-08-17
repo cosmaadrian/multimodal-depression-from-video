@@ -106,6 +106,12 @@ class DVlogDataset(AcumenDataset):
             if "body_landmarks" in modality_names:
                 return ["body_landmarks"]
 
+            if 'blinking_features' in modality_names:
+                return ['blinking_features']
+
+            if 'gaze_features' in modality_names:
+                return ['gaze_features']
+
             raise Exception("Madonna! No modality was identified when computing the presence mask")
 
             # hand landmarks is the least frequent modality, so it will

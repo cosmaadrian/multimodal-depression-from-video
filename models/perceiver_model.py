@@ -34,7 +34,6 @@ class PerceiverModel(torch.nn.Module):
                 modality.name: CrossAttentionBlock(self.args)
                 for modality in self.args.modalities
             })
-
         else:
             self.cross_attn_blocks = CrossAttentionBlock(self.args)
             # TODO clarifying details when adding modality embeddings

@@ -41,6 +41,7 @@ def load_args(args):
             included_cfg = {**included_cfg, ** extend_config(cfg_path = included_cfg_path, child = None)}
 
         cfg = {**cfg, **included_cfg}
+        del cfg['$includes$']
 
     for key, value in cfg.items():
         if key in args and args.__dict__[key] is not None:
@@ -153,10 +154,13 @@ def find_config_file():
 
     return config_path
 
-def define_args(extra_args = None, verbose = True):
-    config_path = find_config_file()
+def define_args(extra_args = None, verbose = True, require_config_file = True):
 
-    cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
+    if require_config_file:
+        config_path = find_config_file()
+        cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
+    else:
+        cfg_args = argparse.Namespace(_={})
 
     parser = argparse.ArgumentParser(description='Do stuff.')
     parser.add_argument('--name', type = str, default = 'test')

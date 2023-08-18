@@ -45,7 +45,7 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
         y_preds_proba = []
         true_labels = []
 
-        y_preds_proba_over_runs = defaultdict(list)
+        y_preds_proba_over_runs = defaultdict(lambda: {'preds': [], 'true_label': None})
 
         if num_runs is None:
             num_runs = self.num_runs
@@ -73,8 +73,9 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
                     y_pred_proba.extend(preds)
                     true_label.extend(labels)
 
-                    for video_id, proba in zip(batch['video_id'], preds):
-                            y_preds_proba_over_runs[video_id].append(proba.item())
+                    for video_id, proba, the_true_label in zip(batch['video_id'], preds, labels):
+                        y_preds_proba_over_runs[video_id]['preds'].append(proba.item())
+                        y_preds_proba_over_runs[video_id]['true_label'] = the_true_label.item()
 
             y_preds.append(y_pred)
             y_preds_proba.append(y_pred_proba)

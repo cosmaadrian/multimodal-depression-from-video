@@ -2,8 +2,14 @@ trainer: classification
 
 $extends$: configs/base_config.yaml
 
+n_temporal_windows: 1
+seconds_per_window: 5
+
 $includes$:
   - configs/modality_config.yaml
+
+# TODO make the model size similar to baseline
+# TODO use cross attention parameter sharing by default
 
 model: perceiver
 model_args:

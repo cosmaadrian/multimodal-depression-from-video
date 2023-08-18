@@ -39,7 +39,7 @@ class TemporalEvaluator(AcumenEvaluator):
         y_preds_proba = {}
         true_labels = {}
 
-        y_preds_proba_over_time = defaultdict(list)
+        y_preds_proba_over_time = defaultdict(lambda: {'preds': [], 'true_label': None})
 
         for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader))):
             finished = False
@@ -56,7 +56,7 @@ class TemporalEvaluator(AcumenEvaluator):
                 current_windows = {}
 
                 # Slow as fuck
-                for video_id, next_window_offset, total_windows in zip(batch['video_id'], next_video_offsets, batch['total_windows']):
+                for video_id, next_window_offset in zip(batch['video_id'], next_video_offsets):
                     new_sample = self.val_dataloader.dataset.get_batch(video_id, next_window_offset)
 
                     for key, value in new_sample.items():
@@ -94,7 +94,8 @@ class TemporalEvaluator(AcumenEvaluator):
 
                 for video_id, proba in zip(batch['video_id'], probas.cpu().numpy()):
                     if video_id in not_finished_video_ids:
-                        y_preds_proba_over_time[video_id].append(proba.item())
+                        y_preds_proba_over_time[video_id]['preds'].append(proba.item())
+                        y_preds_proba_over_time[video_id]['true_label'] = true_labels[video_id]
 
                 for video_id, proba in zip(finished_video_ids, final_probas):
 
@@ -104,23 +105,26 @@ class TemporalEvaluator(AcumenEvaluator):
                     y_preds[video_id] = proba.round().item()
                     y_preds_proba[video_id] = proba.item()
 
-                    y_preds_proba_over_time[video_id].append(proba.item()) # append the last one
+                    y_preds_proba_over_time[video_id]['preds'].append(proba.item()) # append the last one
 
                 if torch.all(current_windows['is_last'] == 1):
                     finished = True
 
-        y_preds = np.array(list(y_preds.values()))
-        y_preds_proba = np.array(list(y_preds_proba.values()))
-        true_labels = np.array(list(true_labels.values()))
+        sorted_keys = sorted(y_preds_proba_over_time.keys())
+
+        y_preds_np = np.array([y_preds[key] for key in sorted_keys])
+        y_preds_proba_np = np.array([y_preds_proba[key] for key in sorted_keys])
+        true_labels_np = np.array([true_labels[key] for key in sorted_keys])
 
         fpr, tpr, thresholds = metrics.roc_curve(
-            true_labels, y_preds_proba, pos_label=1
+            true_labels_np, y_preds_proba_np, pos_label=1
         )
-        acc = metrics.accuracy_score(true_labels, y_preds)
+
+        acc = metrics.accuracy_score(true_labels_np, y_preds_np)
         auc = metrics.auc(fpr, tpr)
-        precision = metrics.precision_score(true_labels, y_preds)
-        recall = metrics.recall_score(true_labels, y_preds)
-        f1 = metrics.f1_score(true_labels, y_preds)
+        precision = metrics.precision_score(true_labels_np, y_preds_np)
+        recall = metrics.recall_score(true_labels_np, y_preds_np)
+        f1 = metrics.f1_score(true_labels_np, y_preds_np)
 
         results_for_logging = {
             "f1": [f1],

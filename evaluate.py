@@ -4,11 +4,16 @@ from easydict import EasyDict
 
 from lib import nomenclature
 from lib import device
+
 from lib.arg_utils import define_args
-from lib.utils import load_model
+from lib.utils import load_model, load_config
 from lib.loggers import NoLogger
+from lib.forge import VersionCommand
+
+VersionCommand().run()
 
 args = define_args(
+    require_config_file = False,
     extra_args = [
         ('--eval_config', {'default': '', 'type': str, 'required': True}),
         ('--output_dir', {'default': '', 'type': str, 'required': True}),
@@ -17,6 +22,10 @@ args = define_args(
 
 with open(args.eval_config, 'rt') as f:
     eval_cfg = EasyDict(yaml.load(f, Loader = yaml.FullLoader))
+
+model_config = load_config(args)
+
+args = EasyDict({**model_config, **args})
 
 args.modalities = [modality for modality in args.modalities if modality.name in args.use_modalities]
 

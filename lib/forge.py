@@ -9,7 +9,7 @@ from git.repo.base import Repo
 import shutil
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from .__version__ import VERSION
+from lib.__version__ import VERSION
 
 """
     python lib/forge.py list
@@ -90,6 +90,9 @@ class VersionCommand(Command):
     description = "Show version and exit."
 
     def run(self, args = None):
+        if __name__ != '__main__':
+            check_version()
+
         print(f"{logo} Version {VERSION}. Let's get that bread.")
 
 class UpdateCommand(Command):

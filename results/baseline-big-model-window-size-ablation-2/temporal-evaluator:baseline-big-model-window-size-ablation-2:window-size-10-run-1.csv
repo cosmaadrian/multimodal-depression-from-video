@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,model
+0.6019417475728156,0.6326530612244898,0.5740740740740741,0.6117913832199546,0.5638297872340425,baseline-big-model-window-size-ablation-2:window-size-10-run-1,d-vlog,baseline

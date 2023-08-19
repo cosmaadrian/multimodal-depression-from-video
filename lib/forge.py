@@ -91,7 +91,8 @@ class VersionCommand(Command):
 
     def run(self, args = None):
         if __name__ != '__main__':
-            check_version()
+            # check_version()
+            pass
 
         print(f"{logo} Version {VERSION}. Let's get that bread.")
 

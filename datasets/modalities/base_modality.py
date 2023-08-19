@@ -9,9 +9,6 @@ class Modality(object):
         self.args = args
         self.chunk_cache = {}
 
-        # computing the lenght in seconds covered by the temporal windows
-        self.window_second_length = int(self.args.n_temporal_windows * self.args.seconds_per_window)
-
         # building no-modality masks for each video sample
         self.modality_masks = {
             video_sample["video_id"]: self._get_modality_mask(video_sample)
@@ -39,12 +36,12 @@ class Modality(object):
         return mask
 
     def _compute_modality_presence_mask(self, video_sample):
-        # obtaining no-modality mask for the specifici video sample
+        # obtaining no-modality mask for the specific video sample
         modality_mask = self.modality_masks[video_sample["video_id"]]
 
         # computing the frame length of all temporal windows according to the corresponding frame rate
         frames_per_second = video_sample["audio_frame_rate"] if "audio" in self.modality_dir else video_sample["video_frame_rate"]
-        window_frame_length = int(self.window_second_length * frames_per_second)
+        window_frame_length = int(self.args.seconds_per_window * frames_per_second)
 
         # convolving the mask sequence to compute the percentage of presence in each window set
         conv_kernel = np.ones((window_frame_length,)) * (1 / window_frame_length)
@@ -90,11 +87,14 @@ class Modality(object):
 
         # finding out left and right bounds
         start_frame = int(start_in_seconds * fps)
-        end_frame = min(int(end_in_seconds * fps), max(indexes, key = lambda x: x[1])[1])
+        end_frame = min(
+            int(end_in_seconds * fps),
+            max(indexes, key = lambda x: x[1])[1]
+        )
 
         # trick for window splitting
-        start_frame = start_frame // self.args.n_temporal_windows * self.args.n_temporal_windows
-        end_frame = end_frame // self.args.n_temporal_windows * self.args.n_temporal_windows
+        start_frame = start_frame // (self.args.n_temporal_windows * self.args.n_temporal_windows)
+        end_frame = end_frame // (self.args.n_temporal_windows * self.args.n_temporal_windows)
 
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]
@@ -109,7 +109,7 @@ class Modality(object):
             start_index = 0
             end_index = data.shape[0]
 
-            # special cases where in-window relative indeces are needed
+            # special cases where in-window relative indexes are needed
             if start_frame > start_chunk:
                 start_index = start_frame - start_chunk
 
@@ -122,12 +122,36 @@ class Modality(object):
             else:
                 output = np.concatenate((output, data[start_index:end_index]))
 
-        # splitting into windows
-        output = np.asarray( np.split(output, self.args.n_temporal_windows, axis=0) )
-
-        # obtaining modality mask
         no_modality_mask = self.modality_masks[video_id][start_frame:end_frame]
-        no_modality_mask = np.asarray( np.split(no_modality_mask, self.args.n_temporal_windows, axis=0) )
+
+        padding = 0
+        mask_padding = 0
+        original_shape = output.shape
+        if output.shape[0] % self.args.n_temporal_windows != 0 or output.shape[0] % self.args.seconds_per_window != 0:
+            # padding so we can properly split into windows
+            padding = int(self.args.n_temporal_windows * self.args.seconds_per_window * np.ceil(fps)) - output.shape[0]
+            assert padding >= 0, "padding is negative"
+
+            # pad the mask
+            mask_padding = int(self.args.n_temporal_windows * self.args.seconds_per_window * np.ceil(fps)) - no_modality_mask.shape[0]
+            mask_padding = int(mask_padding)
+
+            # hack, i dont even know what this does
+            if (output.shape[0] + padding) % self.args.n_temporal_windows != 0 or (output.shape[0] + padding) % self.args.seconds_per_window != 0:
+                padding = padding + 1
+                mask_padding = mask_padding + 1
+
+            output = np.concatenate((output, np.zeros((padding, output.shape[1]))))
+            no_modality_mask = np.concatenate((no_modality_mask, np.zeros((mask_padding,)))).astype(bool)
+
+        assert output.shape[0] % self.args.n_temporal_windows == 0, f"output shape {output.shape} is not divisible by n_temporal_windows ({self.args.n_temporal_windows}), padding = {padding}, {output.shape, original_shape, self.args.n_temporal_windows, self.args.seconds_per_window, fps, self.args.n_temporal_windows * self.args.seconds_per_window * fps}"
+        assert output.shape[0] % self.args.seconds_per_window == 0, f"output shape {output.shape} is not divisible by seconds_per_window ({self.args.seconds_per_window}), padding = {padding}, {output.shape, original_shape, self.args.n_temporal_windows, self.args.seconds_per_window, fps, self.args.n_temporal_windows * self.args.seconds_per_window * fps}"
+
+        # splitting into windows
+        output = np.asarray(np.split(output, self.args.n_temporal_windows, axis=0))
+        no_modality_mask = np.asarray(np.split(no_modality_mask, self.args.n_temporal_windows, axis=0))
+
+        assert output.shape[1] != 0, f'output shape ({original_shape} -> {output.shape}) is 0, {start_in_seconds}, {end_in_seconds}, {self.args.n_temporal_windows}, {self.args.seconds_per_window}, {video_sample["duration"]}'
 
         return output.astype('float32'), no_modality_mask
 
@@ -138,11 +162,10 @@ class Modality(object):
             data (np.array): input data (num_windows, num_frames, embed_size)
             no_modality_mask (np.array): mask indicating in which frames modality was not found
         Returns:
-            np.array: normalized and padded input data (num_windows, max_num_frames, embed_size)
+            np.array: padded input data (num_windows, max_num_frames, embed_size)
             np.array: mask (num_windows, max_num_frames)
         """
-        data_shape = data.shape
-        W, T = data_shape[0], data_shape[1]
+        W, T = data.shape[0], data.shape[1]
 
         # flatten data input array
         flatten_data = np.reshape(data, (W, T, -1))

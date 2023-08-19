@@ -35,17 +35,8 @@ class DVlogDataset(AcumenDataset):
             for modality in self.args.modalities
         }
 
-        self.window_second_length = int(self.args.n_temporal_windows * self.args.seconds_per_window)
-
         # identifying priority modalities
         self.priority_modalities = self._priority_modalities()
-
-        # TODO Discuss this thing together
-        # special cases where samples have to be removed, since the priority modality was not found
-        # if "body_landmarks" in self.priority_modalities:
-        #     self.df = self.df.drop(self.df[self.df["body_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
-        # if "hand_landmarks" in self.priority_modalities:
-        #     self.df = self.df.drop(self.df[self.df["hand_presence"] < (self.df["duration"] * self.args.presence_threshold)].index)
 
         # computing presence masks for each video sample
         self.presence_masks = {
@@ -65,6 +56,7 @@ class DVlogDataset(AcumenDataset):
             num_workers = args.environment['num_workers'],
             pin_memory = True,
             shuffle = True,
+            drop_last = True,
             batch_size = args.batch_size
         )
 
@@ -136,17 +128,18 @@ class DVlogDataset(AcumenDataset):
         try:
             start_index = np.random.choice(np.argwhere(presence_mask).squeeze(-1), 1)[0]
         except ValueError as e:
-            # print("\n\n\033[93mWARNING:\033[0m Doamne, nu-mi vine să cred! No mask covering",
-            #     f"the specified presence threshold ({self.args.presence_threshold})",
-            #     f"for the video sample {video_sample['video_id']}",
-            #     f"was found when considering the modalities: [{','.join(self.priority_modalities)}]).",
-            #     "Taking a random window with no care about presence. \033[94mPlease, consider to relax the threshold.\033[0m\n",
-            # )
             start_index = np.random.choice(np.argwhere(presence_mask == 0).squeeze(-1), 1)[0]
 
         # computing window in seconds
-        start_in_seconds = start_index / video_sample["video_frame_rate"]
-        end_in_seconds = start_in_seconds + self.window_second_length
+        start_in_seconds = start_index // video_sample["video_frame_rate"]
+        end_in_seconds = start_in_seconds + int(self.args.n_temporal_windows * self.args.seconds_per_window)
+
+        if end_in_seconds > video_sample["duration"]:
+            end_in_seconds = int(video_sample["duration"])
+            start_in_seconds = end_in_seconds - int(self.args.n_temporal_windows * self.args.seconds_per_window)
+
+        if start_in_seconds < 0:
+            start_in_seconds = 0
 
         return start_in_seconds, end_in_seconds
 
@@ -173,6 +166,10 @@ class DVlogDataset(AcumenDataset):
 
 class DVlogEvaluationDataset(DVlogDataset):
     def __init__(self, args, kind='validation', data_transforms=None):
+
+        if kind in ['validation', 'test']:
+            self.args.presence_threshold = -1
+
         super().__init__(args, kind, data_transforms)
 
     def get_next_window(self, video_sample, window_offset = 0):

@@ -69,9 +69,9 @@ checkpoint_callback_last = callbacks.ModelCheckpoint(
 
 if args.scheduler == "cyclelr":
     scheduler = torch.optim.lr_scheduler.CyclicLR(
-        optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.max_lr / 10),
         cycle_momentum = False,
-        base_lr = args.scheduler_args.base_lr,
+        base_lr = args.scheduler_args.max_lr / 10,
         mode = args.scheduler_args.mode,
         step_size_up = len(train_dataloader) * args.scheduler_args.step_size_up, # per epoch
         step_size_down = len(train_dataloader) * args.scheduler_args.step_size_down, # per epoch
@@ -79,7 +79,7 @@ if args.scheduler == "cyclelr":
     )
 elif args.scheduler == "onecyclelr":
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.max_lr / 10),
         max_lr = args.scheduler_args.max_lr,
         steps_per_epoch = round(len(train_dataloader) / args.accumulation_steps),
         epochs = args.epochs,
@@ -103,8 +103,8 @@ if args.debug:
 else:
     print("[🐞🐞🐞🐞🐞🐞] REMOVING ModelCheckpoint TO SAVE SPACE ... ")
     print("[🐞🐞🐞🐞🐞🐞] WHEN RUNNING FINAL EXPERIMENTS ADD IT BACK!!!!!!")
-    checkpoint_callback_best.actually_save = False
-    checkpoint_callback_last.actually_save = False
+    checkpoint_callback_best.actually_save = True
+    checkpoint_callback_last.actually_save = True
 
 callbacks = [
     checkpoint_callback_best,

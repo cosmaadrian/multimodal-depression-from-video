@@ -80,21 +80,15 @@ class DVlogDataset(AcumenDataset):
             return [self.args.modalities[0].name]
         else:
             # multi-modality experiments
-            # prefence: audio_embeddings > face_embeddings > face_landmarks > body_landmarks > hand_landmarks
-            if ("audio_embeddings" in modality_names) and ("face_embeddings" in modality_names):
-                return ["audio_embeddings", "face_embeddings"]
-
-            if ("audio_embeddings" in modality_names) and ("face_landmarks" in modality_names):
-                return ["audio_embeddings", "face_landmarks"]
-
-            if "audio_embeddings" in modality_names:
-                return ["audio_embeddings"]
-
+            # prefence: face_embeddings > face_landmarks > audio_embeddings > body_landmarks > hand_landmarks
             if "face_embeddings" in modality_names:
                 return ["face_embeddings"]
 
             if "face_landmarks" in modality_names:
                 return ["face_landmarks"]
+
+            if "audio_embeddings" in modality_names:
+                return ["audio_embeddings"]
 
             if "body_landmarks" in modality_names:
                 return ["body_landmarks"]
@@ -115,9 +109,9 @@ class DVlogDataset(AcumenDataset):
         presence_mask = self.modalities[self.priority_modalities[0]].modality_presence_masks[video_sample["video_id"]]
 
         # combining more than one modality mask: only in the case voice + face
-        for other_modality_id in self.priority_modalities[1:]:
-            other_presence_mask = self.modalities[other_modality_id].modality_presence_masks[video_sample["video_id"]]
-            presence_mask = np.logical_and(presence_mask, other_presence_mask)
+        # for other_modality_id in self.priority_modalities[1:]:
+        #     other_presence_mask = self.modalities[other_modality_id].modality_presence_masks[video_sample["video_id"]]
+        #     presence_mask = np.logical_and(presence_mask, other_presence_mask)
 
         return presence_mask
 

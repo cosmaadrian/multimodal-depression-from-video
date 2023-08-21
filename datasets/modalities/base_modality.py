@@ -93,8 +93,8 @@ class Modality(object):
         )
 
         # trick for window splitting
-        start_frame = start_frame // (self.args.n_temporal_windows * self.args.n_temporal_windows)
-        end_frame = end_frame // (self.args.n_temporal_windows * self.args.n_temporal_windows)
+        start_frame = (start_frame // self.args.n_temporal_windows) * self.args.n_temporal_windows
+        end_frame = (end_frame // self.args.n_temporal_windows) * self.args.n_temporal_windows
 
         min_index = min([v for v in indexes if v[0] <= start_frame], key = lambda x: abs(x[0] - start_frame))[0]
         max_index = min([v for v in indexes if v[1] >= end_frame], key = lambda x: abs(x[1] - end_frame))[1]

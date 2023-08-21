@@ -24,8 +24,6 @@ class DVlogDataset(AcumenDataset):
         if kind == 'test':
             self.df = pd.read_csv(f'{args.environment["d-vlog"]}/splits/test.csv', index_col=0)
             self.df = self.df.sort_values(by = 'duration')
-
-        if kind in ['validation', 'test']:
             self.args.n_temporal_windows = 1
 
         self.df['label'] = self.df['label'].apply(lambda x: 0 if x == 'normal' else 1)

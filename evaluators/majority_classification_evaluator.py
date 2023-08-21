@@ -57,14 +57,32 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
 
             with torch.no_grad():
                 for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader), colour = 'green')):
+                    latent = None
                     for key, value in batch.items():
                         if isinstance(value, torch.Tensor):
                             batch[key] = value.to(self.device)
 
-                        if 'modality' in key:
-                            batch[key] = batch[key].squeeze(1)
+                        if self.args.model == "baseline":
+                            if 'modality' in key:
+                                batch[key] = batch[key].squeeze(1)
 
-                    output = self.model(batch)['depression'].probas[:, 1] # 0.0, 0.9
+                    if self.args.model == "perceiver":
+                        for window_idx in range(0, self.args.n_temporal_windows):
+                            window_batch = {}
+                            window_batch['video_frame_rate'] = batch['video_frame_rate']
+                            window_batch['audio_frame_rate'] = batch['audio_frame_rate']
+
+                            for modality in self.args.modalities:
+                                modality_id = modality.name
+                                window_batch[f"modality:{modality_id}:data"] = batch[f"modality:{modality_id}:data"][:, window_idx, ...]
+                                window_batch[f"modality:{modality_id}:mask"] = batch[f"modality:{modality_id}:mask"][:, window_idx, ...]
+
+                            outputs = self.model(window_batch, latent = latent)
+                            latent = outputs['latent']
+                    else:
+                        outputs = self.model(batch)
+                        
+                    output = outputs['depression'].probas[:, 1] # 0.0, 0.9
 
                     preds = np.vstack(output.detach().cpu().numpy()).ravel()
                     labels = np.vstack(batch["labels"].detach().cpu().numpy()).ravel()

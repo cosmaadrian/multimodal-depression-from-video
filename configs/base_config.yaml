@@ -22,7 +22,7 @@ model_checkpoint:
 evaluators:
   - name: majority_evaluator
     args:
-      num_eval_runs: 5
+      num_eval_runs: 15
 
 heads:
   - kind: classification
@@ -51,8 +51,7 @@ scheduler: "cyclelr"
 scheduler_args:
   start_epoch: 0
   end_epoch: 300
-  base_lr: 0.00001
   max_lr:  0.0001
   mode: triangular
-  step_size_up: 12
-  step_size_down: 12
+  step_size_up: 24
+  step_size_down: 24

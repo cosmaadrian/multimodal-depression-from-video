@@ -141,7 +141,7 @@ class Modality(object):
                 padding = padding + 1
                 mask_padding = mask_padding + 1
 
-            output = np.concatenate((output, np.zeros((padding, output.shape[1]))))
+            output = np.concatenate((output, np.zeros((padding, *output.shape[1:]))))
             no_modality_mask = np.concatenate((no_modality_mask, np.zeros((mask_padding,)))).astype(bool)
 
         assert output.shape[0] % self.args.n_temporal_windows == 0, f"output shape {output.shape} is not divisible by n_temporal_windows ({self.args.n_temporal_windows}), padding = {padding}, {output.shape, original_shape, self.args.n_temporal_windows, self.args.seconds_per_window, fps, self.args.n_temporal_windows * self.args.seconds_per_window * fps}"

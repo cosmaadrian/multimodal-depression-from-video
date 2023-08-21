@@ -1,5 +1,6 @@
 import torch
 import random
+import copy
 import numpy as np
 import pandas as pd
 
@@ -167,10 +168,12 @@ class DVlogDataset(AcumenDataset):
 class DVlogEvaluationDataset(DVlogDataset):
     def __init__(self, args, kind='validation', data_transforms=None):
 
-        if kind in ['validation', 'test']:
-            self.args.presence_threshold = -1
+        local_args = copy.deepcopy(args)
 
-        super().__init__(args, kind, data_transforms)
+        if kind in ['validation', 'test']:
+            local_args.presence_threshold = -1
+
+        super().__init__(local_args, kind, data_transforms)
 
     def get_next_window(self, video_sample, window_offset = 0):
         # obtaining presence mask of a specific video sample

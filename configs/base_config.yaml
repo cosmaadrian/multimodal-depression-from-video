@@ -38,15 +38,6 @@ losses:
       num_classes: 2
       #weights: [1.19801204733859, 0.8581600073425819] #[control_weight, depr_weight]
 
-lr_scheduler:
-  start_epoch: 0
-  end_epoch: 300
-  base_lr: 0.0001
-  max_lr:  0.001
-  mode: triangular
-  step_size_up: 10
-  step_size_down: 10
-
 scheduler: "cyclelr"
 scheduler_args:
   start_epoch: 0

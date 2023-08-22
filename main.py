@@ -85,6 +85,26 @@ elif args.scheduler == "onecyclelr":
         epochs = args.epochs,
         anneal_strategy = "linear",
     )
+elif args.scheduler == "exponential":
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.max_lr),
+        gamma = 0.99,
+    )
+elif args.scheduler == "step":
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.max_lr),
+        step_size = 1,
+        gamma = 0.99,
+    )
+elif args.scheduler == "linear":
+    scheduler = torch.optim.lr_scheduler.LinearLR(
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.max_lr),
+        start_factor = 1.0,
+        end_factor = 0.0001,
+        total_iters = args.epochs * round(len(train_dataloader) / args.accumulation_steps),
+    )
+
+
 else:
     raise NotImplementedError("Support only 'cyclelr' or 'onecyclelr'")
 

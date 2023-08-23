@@ -73,6 +73,7 @@ class BaselineModel(torch.nn.Module):
         # applying transformer encoder
         output, _ = self.transformer_block(cat_data, cat_mask)
 
+        # TODO !!!!!!!!
         # window average and final normalization
         # output = self.final_norm(
         #     Reduce('b n d -> b d', 'mean')(output),

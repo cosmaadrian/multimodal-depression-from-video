@@ -4,7 +4,7 @@ accumulation_steps: 1
 run_id: 1
 seed: -1
 
-save_model: 0
+save_model: 1
 
 log_every: 5
 epochs: 300

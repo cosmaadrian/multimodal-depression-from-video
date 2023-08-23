@@ -13,6 +13,8 @@ from lib import NotALightningTrainer
 from lib import nomenclature
 from lib.forge import VersionCommand
 
+from utils import get_cosine_schedule_with_warmup
+
 VersionCommand().run()
 
 args = define_args()
@@ -103,7 +105,13 @@ elif args.scheduler == "linear":
         end_factor = 0.0001,
         total_iters = args.epochs * round(len(train_dataloader) / args.accumulation_steps),
     )
-
+elif args.scheduler == "cosine":
+    scheduler = get_cosine_schedule_with_warmup(
+        optimizer = model.configure_optimizers(lr = 0.001),
+        num_training_steps = args.epochs * len(train_dataloader),
+        num_warmup_steps = 0,
+        last_epoch = -1
+    )
 
 else:
     raise NotImplementedError("Support only 'cyclelr' or 'onecyclelr'")
@@ -121,10 +129,12 @@ if args.debug:
     checkpoint_callback_best.actually_save = False
     checkpoint_callback_last.actually_save = False
 else:
-    print("[🐞🐞🐞🐞🐞🐞] REMOVING ModelCheckpoint TO SAVE SPACE ... ")
-    print("[🐞🐞🐞🐞🐞🐞] WHEN RUNNING FINAL EXPERIMENTS ADD IT BACK!!!!!!")
-    checkpoint_callback_best.actually_save = True
-    checkpoint_callback_last.actually_save = True
+    checkpoint_callback_best.actually_save = bool(args.save_model)
+    checkpoint_callback_last.actually_save = bool(args.save_model)
+
+    if not args.save_model:
+        print("[🐞🐞🐞🐞🐞🐞] REMOVING ModelCheckpoint TO SAVE SPACE ... ")
+        print("[🐞🐞🐞🐞🐞🐞] WHEN RUNNING FINAL EXPERIMENTS CHAGE save_model TO 1!!!!!!")
 
 callbacks = [
     checkpoint_callback_best,

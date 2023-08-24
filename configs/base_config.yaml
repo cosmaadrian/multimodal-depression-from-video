@@ -24,7 +24,7 @@ model_checkpoint:
 evaluators:
   - name: majority_evaluator
     args:
-      num_eval_runs: 15
+      num_eval_runs: 10
 
 heads:
   - kind: classification

@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,model
+0.6722689075630252,0.8163265306122449,0.5714285714285714,0.7510204081632654,0.5851063829787234,perceiver-cosinelr:cosinelr-0.00001-run-1,d-vlog,perceiver

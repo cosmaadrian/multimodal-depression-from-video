@@ -17,7 +17,8 @@ args = define_args(
     extra_args = [
         ('--eval_config', {'default': '', 'type': str, 'required': True}),
         ('--output_dir', {'default': '', 'type': str, 'required': True}),
-        ('--checkpoint_kind', {'default': 'best', 'type': str, 'required': False})
+        ('--checkpoint_kind', {'default': 'best', 'type': str, 'required': False}),
+        ('--n_temporal_windows', {'default': '', 'type': int, 'required': True}),
     ])
 
 with open(args.eval_config, 'rt') as f:

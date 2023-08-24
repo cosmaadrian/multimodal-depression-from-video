@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,model
+0.7050359712230216,1.0,0.5444444444444444,0.6353741496598639,0.5638297872340425,perceiver-cyclelr:cyclelr-lr-0.0001-run-1,d-vlog,perceiver

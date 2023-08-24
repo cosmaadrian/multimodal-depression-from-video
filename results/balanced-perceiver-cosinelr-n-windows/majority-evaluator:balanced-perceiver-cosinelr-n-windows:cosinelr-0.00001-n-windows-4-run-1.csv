@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,model
+0.7058823529411764,0.8571428571428571,0.6,0.6798185941043083,0.6276595744680851,balanced-perceiver-cosinelr-n-windows:cosinelr-0.00001-n-windows-4-run-1,d-vlog,perceiver

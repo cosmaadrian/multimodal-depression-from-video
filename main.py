@@ -107,7 +107,7 @@ elif args.scheduler == "linear":
     )
 elif args.scheduler == "cosine":
     scheduler = get_cosine_schedule_with_warmup(
-        optimizer = model.configure_optimizers(lr = 0.001),
+        optimizer = model.configure_optimizers(lr = args.scheduler_args.max_lr ),
         num_training_steps = args.epochs * len(train_dataloader),
         num_warmup_steps = 0,
         last_epoch = -1

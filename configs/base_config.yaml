@@ -25,6 +25,8 @@ evaluators:
   - name: majority_evaluator
     args:
       num_eval_runs: 10
+      dataset: d-vlog
+      kind: validation
 
 heads:
   - kind: classification
@@ -38,7 +40,7 @@ losses:
     target_head: depression
     args:
       num_classes: 2
-      #weights: [1.19801204733859, 0.8581600073425819] #[control_weight, depr_weight]
+      weights: [1.19801204733859, 0.8581600073425819] #[control_weight, depr_weight]
 
 scheduler: "cyclelr"
 scheduler_args:

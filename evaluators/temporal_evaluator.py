@@ -23,7 +23,7 @@ class TemporalEvaluator(AcumenEvaluator):
         self.evaluator_args = evaluator_args
         self.dataset = nomenclature.DATASETS[self.evaluator_args.dataset]
 
-        self.val_dataloader = self.dataset.val_dataloader(args, kind = 'validation')
+        self.val_dataloader = self.dataset.val_dataloader(args, kind = self.evaluator_args.kind)
         self.device = device
 
     def trainer_evaluate(self, step):
@@ -126,15 +126,32 @@ class TemporalEvaluator(AcumenEvaluator):
         recall = metrics.recall_score(true_labels_np, y_preds_np)
         f1 = metrics.f1_score(true_labels_np, y_preds_np)
 
+        #### compute the same metrics but as a mean of predictions over time
+        y_preds_proba_over_time_np = np.array([np.mean(y_preds_proba_over_time[key]['preds']) for key in sorted_keys])
+        y_preds_over_time_np = y_preds_proba_over_time_np.round()
+
+        fpr_over_time, tpr_over_time, thresholds_over_time = metrics.roc_curve(
+            true_labels_np, y_preds_proba_over_time_np, pos_label=1
+        )
+
+        acc_over_time = metrics.accuracy_score(true_labels_np, y_preds_over_time_np)
+        auc_over_time = metrics.auc(fpr_over_time, tpr_over_time)
+        precision_over_time = metrics.precision_score(true_labels_np, y_preds_over_time_np)
+        recall_over_time = metrics.recall_score(true_labels_np, y_preds_over_time_np)
+        f1_over_time = metrics.f1_score(true_labels_np, y_preds_over_time_np)
+
+
         results_for_logging = {
-            "f1": [f1],
-            "recall": [recall],
-            "precision": [precision],
-            "auc": [auc],
-            "accuracy": [acc],
-            "name": [f"{self.args.group}:{self.args.name}"],
-            "dataset": [self.args.dataset],
-            "model": [self.args.model],
+            "f1": [f1, f1_over_time],
+            "recall": [recall, recall_over_time],
+            "precision": [precision, precision_over_time],
+            "auc": [auc, auc_over_time],
+            "accuracy": [acc, acc_over_time],
+            "name": [f"{self.args.group}:{self.args.name}", f"{self.args.group}:{self.args.name}"],
+            "dataset": [self.args.dataset, self.args.dataset],
+            "dataset_kind": [self.evaluator_args.kind, self.evaluator_args.kind],
+            "model": [self.args.model, self.args.model],
+            "prediction_kind": ['last', 'mean']
         }
 
         actual_results = {
@@ -147,11 +164,11 @@ class TemporalEvaluator(AcumenEvaluator):
 
         if save:
             pd.DataFrame.from_dict(results_for_logging).to_csv(
-                f"results/{self.args.output_dir}/temporal-evaluator:{self.args.group}:{self.args.name}.csv",
+                f"results/{self.args.output_dir}/temporal-evaluator:{self.args.group}:{self.args.name}:{self.evaluator_args.kind}.csv",
                 index=False,
             )
 
-            with open(f"results/{self.args.output_dir}/temporal-evaluator:{self.args.group}:{self.args.name}:over-time.json", 'w') as f:
+            with open(f"results/{self.args.output_dir}/temporal-evaluator:{self.args.group}:{self.args.name}:over-time:{self.evaluator_args.kind}.json", 'w') as f:
                 json.dump(y_preds_proba_over_time, f, indent=4)
 
         return actual_results

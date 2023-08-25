@@ -25,9 +25,9 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
         self.nomenclature = nomenclature
 
         self.evaluator_args = evaluator_args
-        self.dataset = nomenclature.DATASETS[self.args.dataset]
+        self.dataset = nomenclature.DATASETS[self.evaluator_args.dataset]
 
-        self.val_dataloader = self.dataset.val_dataloader(args, kind = 'validation')
+        self.val_dataloader = self.dataset.val_dataloader(args, kind = self.evaluator_args.kind)
         self.device = device
 
         self.num_runs = self.evaluator_args.num_eval_runs
@@ -133,7 +133,9 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
             "accuracy": [acc],
             "name": [f"{self.args.group}:{self.args.name}"],
             "dataset": [self.args.dataset],
+            "dataset_kind": [self.evaluator_args.kind],
             "model": [self.args.model],
+            "prediction_kind": [f'mean over {num_runs} runs']
         }
 
         actual_results = {
@@ -146,11 +148,11 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
 
         if save:
             pd.DataFrame.from_dict(results_for_logging).to_csv(
-                f"results/{self.args.output_dir}/majority-evaluator:{self.args.group}:{self.args.name}.csv",
+                f"results/{self.args.output_dir}/majority-evaluator:{self.args.group}:{self.args.name}:{self.evaluator_args.kind}.csv",
                 index=False,
             )
 
-            with open(f"results/{self.args.output_dir}/majority-evaluator:{self.args.group}:{self.args.name}:over-runs.json", "w") as f:
+            with open(f"results/{self.args.output_dir}/majority-evaluator:{self.args.group}:{self.args.name}:over-runs:{self.evaluator_args.kind}.json", "w") as f:
                 json.dump(y_preds_proba_over_runs, f, indent=4)
 
         return actual_results

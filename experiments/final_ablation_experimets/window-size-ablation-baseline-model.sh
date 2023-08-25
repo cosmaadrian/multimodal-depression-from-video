@@ -15,7 +15,7 @@ N_TEMPORAL_WINDOWS=1
 PRESENCE_THRESHOLD=0.5
 USE_MODALITIES="audio_embeddings face_embeddings"
 
-WANDB_MODE=dryrun
+WANDB_MODE=run
 ENV="banamar-upv16"
 GROUP=baseline-ws-ablation-final
 DEFAULT_ARGS="--group $GROUP --mode $WANDB_MODE --env $ENV --config_file configs/baseline_config.yaml --save_model 1 --trainer $TRAINER --scheduler $SCHEDULER --scheduler_args.max_lr $MAX_LR --scheduler_args.end_epoch $EPOCHS --n_temporal_windows $N_TEMPORAL_WINDOWS --presence_threshold $PRESENCE_THRESHOLD --epochs $EPOCHS --batch_size $BATCH_SIZE --use_modalities $USE_MODALITIES"

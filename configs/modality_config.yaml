@@ -58,3 +58,18 @@ modalities:
       self_attn_dim_head: 64
       dropout_rate: 0.1
       layer_dropout_rate: 0.0
+
+  - name: orig_face_landmarks
+    input_dim: 136
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+  
+  - name: orig_audio_descriptors
+    input_dim: 25
+    model_args:
+      latent_dim: 256

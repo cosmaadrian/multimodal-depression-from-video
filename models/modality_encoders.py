@@ -42,7 +42,12 @@ class NoOpEncoder(torch.nn.Module):
 
         self.is_audio = "audio" in self.modality_encoder_args.name
 
-        max_fps = constants.MAX_AUDIO_FPS if self.is_audio else constants.MAX_VIDEO_FPS
+        # TODO modify
+        if 'original' in self.args.dataset:
+            max_fps = 1
+        else:
+            max_fps = constants.MAX_AUDIO_FPS if self.is_audio else constants.MAX_VIDEO_FPS
+
         self.max_data_length = max_fps * self.args.seconds_per_window
 
     def forward(self, data, mask, framerate_ratio):
@@ -77,7 +82,10 @@ class HandLandmarkEncoder(torch.nn.Module):
             2, self.modality_encoder_args.model_args.latent_dim,
         )
 
-        self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
+        if 'original' in self.args.dataset:
+            self.max_data_length = self.args.seconds_per_window
+        else:
+            self.max_data_length = constants.MAX_VIDEO_FPS * self.args.seconds_per_window
 
         self.encoder = multi_sequential_repeat(
             self.modality_encoder_args.model_args.num_layers,

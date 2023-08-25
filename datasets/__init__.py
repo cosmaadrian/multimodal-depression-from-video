@@ -1,4 +1,5 @@
 from .dvlog_dataset import DVlogDataset, DVlogEvaluationDataset
+from .original_dvlog_dataset import OriginalDVlogDataset, OriginalDVlogEvaluationDataset
 
 from .modalities import FaceLandmarks
 from .modalities import HandLandmarks

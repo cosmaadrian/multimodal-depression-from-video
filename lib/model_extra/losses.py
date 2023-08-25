@@ -24,7 +24,7 @@ class AcumenCrossEntropy(torch.nn.Module):
         self.loss_args = loss_args
         
         if 'weights' in self.loss_args:
-            self.weights = self.loss_args.weights
+            self.weights = torch.tensor(self.loss_args.weights).float().to(device)
         else:
             self.weights = None
     
@@ -42,7 +42,7 @@ class AcumenBinaryCrossEntropy(torch.nn.Module):
         self.loss_args = loss_args
 
         if 'weights' in self.loss_args:
-            self.weights = self.loss_args.weights
+            self.weights = torch.tensor(self.loss_args.weights).float().to(device)
         else:
             self.weights = None
 

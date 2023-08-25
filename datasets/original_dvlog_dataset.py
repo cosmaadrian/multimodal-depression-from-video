@@ -35,7 +35,7 @@ class OriginalDVlogDataset(AcumenDataset):
 
         # computing presence masks for each video sample
         self.presence_masks = {
-            video_sample["video_id"]: np.ones(video_sample["duration"], dtype = np.bool)
+            video_sample["video_id"]: np.ones(video_sample["duration"]).astype(bool)
             for idx, video_sample in self.df.iterrows()
         }
 

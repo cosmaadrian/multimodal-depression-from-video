@@ -1,0 +1,3 @@
+f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
+0.6153846153846154,0.7346938775510204,0.5294117647058824,0.6126984126984127,0.5212765957446809,baseline-ws-ablation-final:window-size-2-run-1,d-vlog,validation,baseline,last
+0.736,0.9387755102040817,0.6052631578947368,0.8099773242630386,0.648936170212766,baseline-ws-ablation-final:window-size-2-run-1,d-vlog,validation,baseline,mean

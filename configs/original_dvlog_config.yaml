@@ -23,3 +23,10 @@ model_args:
   self_attn_dim_head: 64
   dropout_rate: 0.1
   layer_dropout_rate: 0.0
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2

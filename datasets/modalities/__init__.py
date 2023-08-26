@@ -8,3 +8,16 @@ from .specific_modalities import BlinkingFeatures
 
 from .specific_modalities import OriginalDVlogFaceLandmarks
 from .specific_modalities import OriginalDVlogAudioDescriptors
+
+from .specific_modalities import DaicWozAudioCovarep
+from .specific_modalities import DaicWozAudioFormant
+from .specific_modalities import DaicWozFacial2dLandmarks
+from .specific_modalities import DaicWozFacial3dLandmarks
+from .specific_modalities import DaicWozFacialAus
+from .specific_modalities import DaicWozFacialHog
+from .specific_modalities import DaicWozGaze
+from .specific_modalities import DaicWozHeadPose
+
+
+
+

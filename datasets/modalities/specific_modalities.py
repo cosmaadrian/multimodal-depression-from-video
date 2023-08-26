@@ -64,16 +64,16 @@ class OriginalDVlogFaceLandmarks(Modality):
         return data, np.ones(data.shape[0]).astype(bool)
 
     def read_chunk(self, video_sample, start_in_seconds, end_in_seconds):
-       
+
         video_features = np.load(f'{self.args.environment["d-vlog-original"]}/{video_sample["video_id"]}/{video_sample["video_id"]}_visual.npy')
         if end_in_seconds > video_features.shape[0]:
             end_in_seconds = video_features.shape[0]
             start_in_seconds = end_in_seconds - self.args.seconds_per_window
-       
+
         output = video_features[start_in_seconds:end_in_seconds]
-        
+
         return output.astype('float32'), np.ones(output.shape[0])
-    
+
 class OriginalDVlogAudioDescriptors(Modality):
     def __init__(self, df, args):
 
@@ -85,13 +85,69 @@ class OriginalDVlogAudioDescriptors(Modality):
         return data, np.ones(data.shape[0]).astype(bool)
 
     def read_chunk(self, video_sample, start_in_seconds, end_in_seconds):
-        
+
         audio_descriptors = np.load(f'{self.args.environment["d-vlog-original"]}/{video_sample["video_id"]}/{video_sample["video_id"]}_acoustic.npy')
         if end_in_seconds > audio_descriptors.shape[0]:
             end_in_seconds = audio_descriptors.shape[0]
             start_in_seconds = end_in_seconds - self.args.seconds_per_window
-       
-        
+
+
         output = audio_descriptors[start_in_seconds:end_in_seconds]
 
         return output.astype('float32'), np.ones(output.shape[0])
+
+class DaicWozAudioCovarep(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'audio_covarep'
+        self.modality_mask_file = 'no_audio_covarep_idxs.npz'
+        super().__init__(args)
+
+class DaicWozAudioFormant(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'audio_formant'
+        self.modality_mask_file = 'no_audio_formant_idxs.npz'
+        super().__init__(args)
+
+class DaicWozFacial2dLandmarks(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'facial_2d_landmarks'
+        self.modality_mask_file = 'no_facial_2d_landmarks_idxs.npz'
+        super().__init__(args)
+
+class DaicWozFacial3dLandmarks(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'facial_3d_landmarks'
+        self.modality_mask_file = 'no_facial_3d_landmarks_idxs.npz'
+        super().__init__(args)
+
+class DaicWozFacialAus(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'facial_aus'
+        self.modality_mask_file = 'no_facial_aus_idxs.npz'
+        super().__init__(args)
+
+class DaicWozFacialHog(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'facial_hog'
+        self.modality_mask_file = 'no_facial_hog_idxs.npz'
+        super().__init__(args)
+
+class DaicWozGaze(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'gaze'
+        self.modality_mask_file = 'no_gaze_idxs.npz'
+        super().__init__(args)
+
+class DaicWozHeadPose(Modality):
+    def __init__(self, df, args):
+        self.df = df
+        self.modality_dir = 'head_pose'
+        self.modality_mask_file = 'no_head_pose_idxs.npz'
+        super().__init__(args)

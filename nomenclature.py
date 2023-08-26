@@ -8,6 +8,10 @@ import datasets
 DATASETS = {
     'd-vlog': datasets.DVlogDataset,
     'd-vlog-eval': datasets.DVlogEvaluationDataset,
+    
+    # Original DVlog data
+    'original-d-vlog': datasets.OriginalDVlogDataset,
+    'original-d-vlog-eval': datasets.OriginalDVlogEvaluationDataset,
 }
 
 MODALITY_ENCODERS = {
@@ -18,6 +22,10 @@ MODALITY_ENCODERS = {
     'face_embeddings': models.NoOpEncoder,
     'blinking_features': models.BlinkingEncoder,
     'gaze_features': models.NoOpEncoder,
+
+    # Original DVlog modalities
+    'orig_face_landmarks': models.LandmarkEncoder,
+    'orig_audio_descriptors': models.NoOpEncoder,
 }
 
 MODALITIES = {
@@ -28,6 +36,10 @@ MODALITIES = {
     'face_embeddings': datasets.modalities.FaceEmbeddings,
     'blinking_features': datasets.modalities.BlinkingFeatures,
     'gaze_features': datasets.modalities.GazeFeatures,
+
+    # Original DVlog modalities
+    'orig_face_landmarks': datasets.modalities.OriginalDVlogFaceLandmarks,
+    'orig_audio_descriptors': datasets.modalities.OriginalDVlogAudioDescriptors,
 }
 
 import trainers

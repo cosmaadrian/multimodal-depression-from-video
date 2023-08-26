@@ -5,3 +5,6 @@ from .specific_modalities import AudioEmbeddings
 from .specific_modalities import FaceEmbeddings
 from .specific_modalities import GazeFeatures
 from .specific_modalities import BlinkingFeatures
+
+from .specific_modalities import OriginalDVlogFaceLandmarks
+from .specific_modalities import OriginalDVlogAudioDescriptors

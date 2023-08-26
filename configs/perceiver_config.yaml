@@ -23,3 +23,11 @@ model_args:
   dropout_rate: 0.1
   layer_dropout_rate: 0.0
   self_attn_parameter_sharing: true
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2
+      weights: [1.19801204733859, 0.8581600073425819] #[control_weight, depr_weight]

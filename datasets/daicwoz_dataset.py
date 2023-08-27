@@ -1,3 +1,4 @@
+import os
 import torch
 import random
 import copy
@@ -20,22 +21,29 @@ class DaicWozDataset(AcumenDataset):
 
         if kind == 'validation':
             self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/validation.csv', index_col=0)
-            self.df = self.df.sort_values(by = 'duration')
 
         if kind == 'test':
             self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/test.csv', index_col=0)
-            self.df = self.df.sort_values(by = 'duration')
-            self.args.n_temporal_windows = 1
 
-        self.df['video_id'] = self.df["Participant_ID"]
+        self.df['video_id'] = self.df["Participant_ID"].map(lambda x: str(x))
         self.df['label'] = self.df["PHQ8_Binary"]
         self.df['gender'] = self.df['Gender']
-        self.df['duration'] = self._compute_duration()
+        self.df['duration'] = self._compute_duration(f'{args.environment["daic-woz"]}/data')
         self.df['video_frame_rate'] = [30.0] * len(self.df.index)
         self.df['audio_frame_rate'] = [100.0] * len(self.df.index)
 
+        if kind == 'validation':
+            self.df = self.df.sort_values(by = 'duration')
+
+        if kind == 'test':
+            self.df = self.df.sort_values(by = 'duration')
+            self.args.n_temporal_windows = 1
+
+        # identifying priority modalities
+        self.priority_modalities = self._priority_modalities()
+
         self.modalities = {
-            modality.name: self.nomenclature.MODALITIES[modality.name](df = self.df, args = self.args)
+            modality.name: self.nomenclature.MODALITIES[modality.name](df = self.df, env_path = f'{args.environment["daic-woz"]}', args = self.args)
             for modality in self.args.modalities
         }
 
@@ -73,18 +81,52 @@ class DaicWozDataset(AcumenDataset):
             pin_memory = True,
         )
 
-    def _compute_duration(self):
+    def _compute_duration(self, root_path):
         durations = []
         for video_id in self.df['video_id'].tolist():
-            audio_covarep_chunks = sorted( os.listdir(f'{args.environment["daic-woz"]}/data/{video_id}/audio_covarep/') )
+            audio_covarep_chunks = sorted( os.listdir(f'{root_path}/{video_id}/audio_covarep/') )
             nframes = int(audio_covarep_chunks[-1].split(".")[0].split("_")[-1])
             durations.append( float(nframes / 100.0) )
 
         return durations
 
+    def _priority_modalities(self):
+        modality_names = [modality.name for modality in self.args.modalities]
+        if len(self.args.modalities) == 1:
+            # mono-modality experiments
+            return [self.args.modalities[0].name]
+        else:
+            # multi-modality experiments
+            # prefence: face_hog > face_aus > face_2d_landmarks > face_3d_landmarks > gaze > head_pose > audio_covarep > audio_formant
+            if "daic_facial_hog" in modality_names:
+                return ["daic_facial_hog"]
+
+            if "daic_facial_aus" in modality_names:
+                return ["daic_facial_aus"]
+
+            if "daic_facial_2d_landmarks" in modality_names:
+                return ["daic_facial_2d_landmarks"]
+
+            if "daic_facial_3d_landmarks" in modality_names:
+                return ["daic_facial_3d_landmarks"]
+
+            if "daic_gaze" in modality_names:
+                return ["daic_gaze"]
+
+            if "daic_head_pose" in modality_names:
+                return ["daic_head_pose"]
+
+            if "daic_audio_covarep" in modality_names:
+                return ["daic_audio_covarep"]
+
+            if "daic_audio_formant" in modality_names:
+                return ["daic_audio_formant"]
+
+            raise Exception("Madonna! No modality was identified when computing the presence mask")
+
     def _compute_presence_mask(self, video_sample):
         # obtaining modality presence mask of a specific video sample
-        presence_mask = self.modalities["audio_covarep"].modality_presence_masks[video_sample["video_id"]]
+        presence_mask = self.modalities[self.priority_modalities[0]].modality_presence_masks[video_sample["video_id"]]
         return presence_mask
 
     def get_random_window(self, video_sample):

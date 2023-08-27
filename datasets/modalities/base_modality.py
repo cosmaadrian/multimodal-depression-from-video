@@ -23,11 +23,11 @@ class Modality(object):
 
     def _get_modality_mask(self, video_sample):
         # getting the total number of frames that compose the video
-        all_chunk_files = sorted(os.listdir(f'{self.args.environment["d-vlog"]}/data/{video_sample["video_id"]}/{self.modality_dir}/'))
+        all_chunk_files = sorted(os.listdir(f'{self.env_path}/data/{video_sample["video_id"]}/{self.modality_dir}/'))
         video_frame_length = int(all_chunk_files[-1].split(".")[0].split("_")[-1])
 
         # loading frames where no modality was detected
-        no_modality_idxs = np.load(f'{self.args.environment["d-vlog"]}/data/{video_sample["video_id"]}/{self.modality_mask_file}')['data'].tolist()
+        no_modality_idxs = np.load(f'{self.env_path}/data/{video_sample["video_id"]}/{self.modality_mask_file}')['data'].tolist()
 
         # constructing mask
         mask = np.ones((video_frame_length,))
@@ -51,7 +51,7 @@ class Modality(object):
             # aligning audio w.r.t. the video frame rate
 
             # obtaining a video-based reference to find out the target length
-            all_chunk_files = sorted(os.listdir(f'{self.args.environment["d-vlog"]}/data/{video_sample["video_id"]}/face_emonet_embeddings/'))
+            all_chunk_files = sorted(os.listdir(f'{self.env_path}/data/{video_sample["video_id"]}/{self.video_ref_modality}/'))
             video_frame_length_reference = int(all_chunk_files[-1].split(".")[0].split("_")[-1])
 
             # sampling audio feature sequence w.r.t. the video-based target length
@@ -72,7 +72,7 @@ class Modality(object):
         if video_id in self.chunk_cache:
             return self.chunk_cache[video_id]
 
-        chunk_files = glob.glob(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/*.npz')
+        chunk_files = glob.glob(f'{self.env_path}/data/{video_id}/{self.modality_dir}/*.npz')
         indexes = [(int(chunk_file.split('/')[-1].split('.')[0].split('_')[-2]), int(chunk_file.split('/')[-1].split('.')[0].split('_')[-1])) for chunk_file in chunk_files]
         self.chunk_cache[video_id] = indexes
 
@@ -104,7 +104,7 @@ class Modality(object):
 
         # building temporal window
         for i, (start_chunk, end_chunk) in enumerate(files_in_window):
-            data = np.load(f'{self.args.environment["d-vlog"]}/data/{video_id}/{self.modality_dir}/{video_id}_{str(start_chunk).zfill(6)}_{str(end_chunk).zfill(6)}.npz')['data']
+            data = np.load(f'{self.env_path}/data/{video_id}/{self.modality_dir}/{video_id}_{str(start_chunk).zfill(6)}_{str(end_chunk).zfill(6)}.npz')['data']
 
             start_index = 0
             end_index = data.shape[0]

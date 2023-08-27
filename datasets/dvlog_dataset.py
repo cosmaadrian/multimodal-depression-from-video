@@ -30,7 +30,7 @@ class DVlogDataset(AcumenDataset):
         self.df['gender'] = self.df['gender'].apply(lambda x: 0 if x == 'f' else 1)
 
         self.modalities = {
-            modality.name: self.nomenclature.MODALITIES[modality.name](df = self.df, args = self.args)
+            modality.name: self.nomenclature.MODALITIES[modality.name](df = self.df, env_path = f'{args.environment["d-vlog"]}', args = self.args)
             for modality in self.args.modalities
         }
 

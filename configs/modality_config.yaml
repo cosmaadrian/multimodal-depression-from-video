@@ -85,7 +85,7 @@ modalities:
       latent_dim: 256
 
   - name: daic_facial_2d_landmarks
-    input_dim: 68
+    input_dim: 136
     model_args:
       latent_dim: 256
       num_layers: 2
@@ -95,7 +95,7 @@ modalities:
       layer_dropout_rate: 0.0
 
   - name: daic_facial_3d_landmarks
-    input_dim: 68
+    input_dim: 204
     model_args:
       latent_dim: 256
       num_layers: 2
@@ -108,11 +108,6 @@ modalities:
     input_dim: 20
     model_args:
       latent_dim: 256
-      num_layers: 2
-      self_attn_num_heads: 4
-      self_attn_dim_head: 64
-      dropout_rate: 0.1
-      layer_dropout_rate: 0.0
 
   - name: daic_facial_hog
     input_dim: 4468

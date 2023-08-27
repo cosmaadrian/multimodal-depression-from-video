@@ -13,13 +13,13 @@ if __name__ == "__main__":
     data_dir = "./data/"
     sessionIDs = sorted( os.listdir(data_dir) )
 
-    modalities = ["audio_covarep", "audio_formant", "facial_2d_landmarks", "facial_3d_landmarks", "facial_aus", "facial_hog", "gaze", "head_pose"]
+    modalities = ["voice", "face"]
     for sessionID in tqdm(sessionIDs):
         session_path = os.path.join(data_dir, sessionID)
 
         for modality in modalities:
             no_modality_path = os.path.join(session_path, "no_"+modality+"_idxs.npz")
 
-            nframes = compute_nframes(session_path, modality)
-            seq = np.ones(nframes)
+            # nframes = compute_nframes(session_path, modality)
+            seq = np.array([], dtype=np.float32)
             np.savez_compressed(no_modality_path, data=seq)

@@ -8,10 +8,14 @@ import datasets
 DATASETS = {
     'd-vlog': datasets.DVlogDataset,
     'd-vlog-eval': datasets.DVlogEvaluationDataset,
-    
+
     # Original DVlog data
     'original-d-vlog': datasets.OriginalDVlogDataset,
     'original-d-vlog-eval': datasets.OriginalDVlogEvaluationDataset,
+
+    # DAIC-WOZ data
+    'daic-woz': datasets.DaicWozDataset,
+    'daic-woz-eval': datasets.DaicWozEvaluationDataset,
 }
 
 MODALITY_ENCODERS = {
@@ -26,6 +30,16 @@ MODALITY_ENCODERS = {
     # Original DVlog modalities
     'orig_face_landmarks': models.LandmarkEncoder,
     'orig_audio_descriptors': models.NoOpEncoder,
+
+    # DAIC-WOZ modalities
+    'daic_audio_covarep': models.NoOpEncoder,
+    'daic_audio_formant': models.NoOpEncoder,
+    'daic_facial_2d_landmarks': models.LandmarkEncoder,
+    'daic_facial_3d_landmarks': models.LandmarkEncoder,
+    'daic_facial_aus': models.NoOpEncoder,
+    'daic_facial_hog': models.NoOpEncoder,
+    'daic_gaze': models.NoOpEncoder,
+    'daic_head_pose': models.NoOpEncoder,
 }
 
 MODALITIES = {
@@ -40,6 +54,16 @@ MODALITIES = {
     # Original DVlog modalities
     'orig_face_landmarks': datasets.modalities.OriginalDVlogFaceLandmarks,
     'orig_audio_descriptors': datasets.modalities.OriginalDVlogAudioDescriptors,
+
+    # DAIC-WOZ modalities
+    'daic_audio_covarep': datasets.modalities.DaicWozAudioCovarep,
+    'daic_audio_formant': datasets.modalities.DaicWozAudioFormant,
+    'daic_facial_2d_landmarks': datasets.modalities.DaicWozFacial2dLandmarks,
+    'daic_facial_3d_landmarks': datasets.modalities.DaicWozFacial3dLandmarks,
+    'daic_facial_aus': datasets.modalities.DaicWozFacialAus,
+    'daic_facial_hog': datasets.modalities.DaicWozFacialHog,
+    'daic_gaze': datasets.modalities.DaicWozGaze,
+    'daic_head_pose': datasets.modalities.DaicWozHeadPose,
 }
 
 import trainers

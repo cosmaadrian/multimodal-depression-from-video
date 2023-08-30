@@ -1,9 +1,12 @@
 checkpoints/
 wandb/
 
+data/databases/D-vlog/original_data/
 data/databases/D-vlog/data/
 data/databases/DAIC-WOZ/data/
 data/databases/E-DAIC-WOZ/data/
+scripts/cache/
+scripts/*.png
 .DS_Store
 ._.
 

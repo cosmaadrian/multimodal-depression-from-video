@@ -4,7 +4,7 @@ set -e
 cd ..
 
 WANDB_MODE=run
-BATCH_SIZE=8
+BATCH_SIZE=64
 EPOCHS=250
 GROUP=baseline-d-vlog-original
 

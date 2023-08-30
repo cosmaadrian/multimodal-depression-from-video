@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
+0.6597938144329897,0.6530612244897959,0.6666666666666666,0.764172335600907,0.648936170212766,baseline-ws-class-weights-ablation-final:window-size-1-run-2,d-vlog,validation,baseline,mean over 10 runs

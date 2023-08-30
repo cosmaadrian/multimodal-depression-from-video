@@ -1,0 +1,3 @@
+f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
+0.5742574257425743,0.5918367346938775,0.5576923076923077,0.5297052154195011,0.5425531914893617,dvlog-baseline-model-size-ablation:pt-0.25-spw-6-nl-8-nh8-hd32-run-2,d-vlog,validation,baseline,last
+0.8125,0.7959183673469388,0.8297872340425532,0.819954648526077,0.8085106382978723,dvlog-baseline-model-size-ablation:pt-0.25-spw-6-nl-8-nh8-hd32-run-2,d-vlog,validation,baseline,mean

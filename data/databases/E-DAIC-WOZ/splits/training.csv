@@ -3,15 +3,15 @@ Participant_ID,Gender,PHQ_Binary,PHQ_Score,PCL-C (PTSD),PTSD Severity
 303,female,0,0,0,17
 304,female,0,6,0,20
 305,male,0,7,0,28
-307,female ,0,4,0,23
-308,female ,1,22,1,67
-309,male ,1,15,1,74
+307,female,0,4,0,23
+308,female,1,22,1,67
+309,male,1,15,1,74
 310,male,0,4,0,35
 311,female,1,21,1,70
 312,male,0,2,0,18
 313,male,0,7,0,44
 314,female,0,1,0,19
-315,male ,0,2,0,18
+315,male,0,2,0,18
 316,male,0,6,0,33
 318,male,0,3,0,19
 319,male,1,13,1,53

@@ -19,5 +19,6 @@ if __name__ == "__main__":
         df = pd.read_csv(data_path, header=None)
 
         seq = df.astype("float32").to_numpy()
+        seq[np.isneginf(seq)] = 0.
         dest_path = os.path.join(dest_dir, dest_name)
         np.savez_compressed(dest_path, data=seq)

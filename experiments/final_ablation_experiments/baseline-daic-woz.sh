@@ -3,7 +3,7 @@
 set -e
 cd ..
 
-WANDB_MODE=run
+WANDB_MODE=dryrun
 BATCH_SIZE=8
 EPOCHS=250
 SECONDS_PER_WINDOW=6

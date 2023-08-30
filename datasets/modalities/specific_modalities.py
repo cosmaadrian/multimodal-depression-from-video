@@ -69,17 +69,14 @@ class BlinkingFeatures(Modality):
 
 class OriginalDVlogFaceLandmarks(Modality):
     def __init__(self, df, env_path, args):
-
         self.args = args
         self.df = df
         self.env_path = env_path
 
     def post_process(self, data, no_modality_mask):
-
         return data, np.ones(data.shape[0]).astype(bool)
 
     def read_chunk(self, video_sample, start_in_seconds, end_in_seconds):
-
         video_features = np.load(f'{self.args.environment["d-vlog-original"]}/{video_sample["video_id"]}/{video_sample["video_id"]}_visual.npy')
         if end_in_seconds > video_features.shape[0]:
             end_in_seconds = video_features.shape[0]
@@ -91,22 +88,18 @@ class OriginalDVlogFaceLandmarks(Modality):
 
 class OriginalDVlogAudioDescriptors(Modality):
     def __init__(self, df, env_path, args):
-
         self.args = args
         self.df = df
         self.env_path = env_path
 
     def post_process(self, data, no_modality_mask):
-
         return data, np.ones(data.shape[0]).astype(bool)
 
     def read_chunk(self, video_sample, start_in_seconds, end_in_seconds):
-
         audio_descriptors = np.load(f'{self.args.environment["d-vlog-original"]}/{video_sample["video_id"]}/{video_sample["video_id"]}_acoustic.npy')
         if end_in_seconds > audio_descriptors.shape[0]:
             end_in_seconds = audio_descriptors.shape[0]
             start_in_seconds = end_in_seconds - self.args.seconds_per_window
-
 
         output = audio_descriptors[start_in_seconds:end_in_seconds]
 

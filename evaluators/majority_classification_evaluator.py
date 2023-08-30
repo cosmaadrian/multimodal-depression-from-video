@@ -81,7 +81,25 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
                             latent = outputs['latent']
                     else:
                         outputs = self.model(batch)
-                        
+
+                    if torch.any(torch.isnan(outputs['depression'].probas)):
+                        print("NaN Detected.")
+                        print(outputs['depression'].probas)
+                        print(batch['labels'])
+                        print(batch['video_id'])
+                        print(batch['start_in_seconds'])
+                        print(batch['end_in_seconds'])
+                        print(batch['video_frame_rate'])
+                        print(batch['audio_frame_rate'])
+
+                        for modality in self.args.modalities:
+                            print(modality.name, 'data shape', batch[f"modality:{modality.name}:data"].shape)
+                            print(modality.name, 'mask shape', batch[f"modality:{modality.name}:mask"].shape)
+
+                            print(modality.name, 'max()', batch[f"modality:{modality.name}:data"].max())
+                            print(modality.name, 'min()', batch[f"modality:{modality.name}:data"].min())
+                        exit(-1)
+
                     output = outputs['depression'].probas[:, 1] # 0.0, 0.9
 
                     preds = np.vstack(output.detach().cpu().numpy()).ravel()
@@ -111,7 +129,7 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
         print(true_labels)
 
         print("Voted Predictions:")
-        print(y_preds_voted)
+        print(y_preds_voted.astype(int))
 
         print("Predictions Proba (Mean):")
         print(y_preds_proba)
@@ -119,6 +137,7 @@ class MajorityClassificationEvaluator(AcumenEvaluator):
         fpr, tpr, thresholds = metrics.roc_curve(
             true_labels, y_preds_proba, pos_label=1
         )
+
         acc = metrics.accuracy_score(true_labels, y_preds_voted)
         auc = metrics.auc(fpr, tpr)
         precision = metrics.precision_score(true_labels, y_preds_voted)

@@ -15,8 +15,8 @@ class OriginalDVlogDataset(AcumenDataset):
         from lib import nomenclature
         self.nomenclature = nomenclature
 
-        self.df = pd.read_csv(f'{args.environment["d-vlog"]}/splits/original/splits.csv', index_col=0)
-        self.df['video_id'] = self.df.index
+        self.df = pd.read_csv(f'{args.environment["d-vlog"]}/splits/original/splits.csv')
+        self.df['video_id'] = self.df.index.astype(str)
         self.df['duration'] = self.df['duration'].apply(lambda x: math.floor(x))
 
         if kind in ['train', 'test']:
@@ -25,11 +25,15 @@ class OriginalDVlogDataset(AcumenDataset):
         if kind == 'validation':
             self.df = self.df[self.df['fold'] == 'valid']
 
+        if kind in ['validation', 'test']:
+            self.df = self.df.sort_values(by = 'duration')
+            self.args.n_temporal_windows = 1
+
         self.df['label'] = self.df['label'].apply(lambda x: 0 if x == 'normal' else 1)
         self.df['gender'] = self.df['gender'].apply(lambda x: 0 if x == 'f' else 1)
 
         self.modalities = {
-            modality.name: self.nomenclature.MODALITIES[modality.name](df = self.df, args = self.args)
+            modality.name: self.nomenclature.MODALITIES[modality.name](df = self.df, env_path = f'{args.environment["d-vlog-original"]}', args = self.args)
             for modality in self.args.modalities
         }
 
@@ -122,12 +126,13 @@ class OriginalDVlogEvaluationDataset(OriginalDVlogDataset):
         super().__init__(local_args, kind, data_transforms)
 
     def get_next_window(self, video_sample, window_offset = 0):
+        video_frame_rate =  1.0
         # obtaining presence mask of a specific video sample
         presence_mask = self.presence_masks[video_sample["video_id"]]
 
         # finding the first window where priority modalities are present
         start_index = np.argwhere(presence_mask).ravel()[window_offset]
-        end_index = int(start_index + self.args.seconds_per_window * video_sample['video_frame_rate'])
+        end_index = int(start_index + self.args.seconds_per_window * video_frame_rate)
         last_window_idx = np.argwhere(presence_mask).ravel()[-1]
 
         is_last = 0
@@ -142,8 +147,8 @@ class OriginalDVlogEvaluationDataset(OriginalDVlogDataset):
                 next_window_offset = window_offset
 
         # computing window in seconds
-        start_in_seconds = start_index / video_sample["video_frame_rate"]
-        end_in_seconds = start_in_seconds + self.args.seconds_per_window
+        start_in_seconds = int(start_index / video_frame_rate)
+        end_in_seconds = int(start_in_seconds + self.args.seconds_per_window)
 
         difference = next_window_offset - window_offset
 

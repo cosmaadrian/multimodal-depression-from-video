@@ -1,0 +1,11 @@
+evaluators:
+  - name: majority_evaluator
+    args:
+      num_eval_runs: 10
+      dataset: original-d-vlog
+      kind: validation
+
+  - name: temporal_evaluator
+    args:
+      dataset: original-d-vlog-eval
+      kind: validation

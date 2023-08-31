@@ -16,6 +16,11 @@ DATASETS = {
     # DAIC-WOZ data
     'daic-woz': datasets.DaicWozDataset,
     'daic-woz-eval': datasets.DaicWozEvaluationDataset,
+
+    # E-DAIC-WOZ data
+    'e-daic-woz': datasets.EDaicWozDataset,
+    'e-daic-woz-eval': datasets.EDaicWozEvaluationDataset,
+
 }
 
 MODALITY_ENCODERS = {
@@ -40,6 +45,13 @@ MODALITY_ENCODERS = {
     'daic_facial_hog': models.NoOpEncoder,
     'daic_gaze': models.NoOpEncoder,
     'daic_head_pose': models.NoOpEncoder,
+
+    # E-DAIC-WOZ modalities
+    'edaic_audio_egemaps': models.NoOpEncoder,
+    'edaic_audio_mfcc': models.NoOpEncoder,
+    'edaic_video_cnn_resnet': models.NoOpEncoder,
+    'edaic_video_pose_gaze_aus': models.NoOpEncoder,
+
 }
 
 MODALITIES = {
@@ -64,6 +76,13 @@ MODALITIES = {
     'daic_facial_hog': datasets.modalities.DaicWozFacialHog,
     'daic_gaze': datasets.modalities.DaicWozGaze,
     'daic_head_pose': datasets.modalities.DaicWozHeadPose,
+
+    # E-DAIC-WOZ modalities
+    'edaic_audio_egemaps': datasets.modalities.EDaicWozAudioEgemaps,
+    'edaic_audio_mfcc': datasets.modalities.EDaicWozAudioMfcc,
+    'edaic_video_cnn_resnet': datasets.modalities.EDaicWozVideoResnet,
+    'edaic_video_pose_gaze_aus': datasets.modalities.EDaicWozPoseGazeAus,
+
 }
 
 import trainers

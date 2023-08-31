@@ -2,6 +2,7 @@ banamar-upv16:
   d-vlog: /home/dgimeno/phd/perceiving-depression/data/databases/D-vlog/
   d-vlog-original: /home/banamar/perceiving-depression/data/databases/D-vlog/original_data
   daic-woz: /home/dgimeno/phd/perceiving-depression/data/databases/DAIC-WOZ/
+  e-daic-woz: /home/dgimeno/phd/perceiving-depression/data/databases/E-DAIC-WOZ/
   num_workers: 8
 
 bucuram-exodus:

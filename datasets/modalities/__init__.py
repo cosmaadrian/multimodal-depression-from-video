@@ -18,6 +18,9 @@ from .specific_modalities import DaicWozFacialHog
 from .specific_modalities import DaicWozGaze
 from .specific_modalities import DaicWozHeadPose
 
-
+from .specific_modalities import EDaicWozAudioEgemaps
+from .specific_modalities import EDaicWozAudioMfcc
+from .specific_modalities import EDaicWozVideoResnet
+from .specific_modalities import EDaicWozPoseGazeAus
 
 

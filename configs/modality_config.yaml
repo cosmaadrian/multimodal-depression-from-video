@@ -133,3 +133,23 @@ modalities:
       self_attn_dim_head: 64
       dropout_rate: 0.1
       layer_dropout_rate: 0.0
+
+  - name: edaic_audio_mfcc
+    input_dim: 39
+    model_args:
+      latent_dim: 256
+
+  - name: edaic_audio_egemaps
+    input_dim: 23
+    model_args:
+      latent_dim: 256
+
+  - name: edaic_video_cnn_resnet
+    input_dim: 2048
+    model_args:
+      latent_dim: 256
+
+  - name: edaic_video_pose_gaze_aus
+    input_dim: 49
+    model_args:
+      latent_dim: 256

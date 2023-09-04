@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
+0.7336683417085427,0.7087378640776699,0.7604166666666666,0.8135019191691126,0.7195767195767195,dvlog-baseline-ablation-modalities-final:av-lm-run-1,d-vlog,test,baseline,mean over 10 runs

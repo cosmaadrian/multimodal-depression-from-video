@@ -1,0 +1,2 @@
+f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
+0.7087378640776699,0.7087378640776699,0.7087378640776699,0.7768119214269588,0.6825396825396826,dvlog-baseline-ablation-modalities-final:av-lm-eyes-run-3,d-vlog,test,baseline,mean over 10 runs

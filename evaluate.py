@@ -20,7 +20,7 @@ args = define_args(
         ('--checkpoint_kind', {'default': 'best', 'type': str, 'required': False}),
         ('--n_temporal_windows', {'default': '', 'type': int, 'required': True}),
         ('--seconds_per_window', {'default': '', 'type': int, 'required': True}),
-        ('--batch_size', {'default': '', 'type': int, 'required': False})
+        ('--batch_size', {'default': 8, 'type': int, 'required': False})
     ])
 
 with open(args.eval_config, 'rt') as f:

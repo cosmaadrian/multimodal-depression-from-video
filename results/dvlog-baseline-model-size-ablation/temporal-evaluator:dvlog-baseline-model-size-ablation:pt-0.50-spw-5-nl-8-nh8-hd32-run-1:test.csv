@@ -1,0 +1,4 @@
+name,run_id,f1,recall,precision,auc,accuracy,dataset,dataset_kind,model,seconds_per_window,presence_threshold,modalities,model_args.num_layers,model_args.self_attn_num_heads,model_args.self_attn_dim_head,prediction_kind
+dvlog-baseline-model-size-ablation:pt-0.50-spw-5-nl-8-nh8-hd32-run-1,1,0.6410256410256411,0.7281553398058253,0.5725190839694656,0.5347708286294874,0.5555555555555556,d-vlog,test,baseline,5,0.5,"['audio_embeddings', 'face_embeddings']",8,8,32,last
+dvlog-baseline-model-size-ablation:pt-0.50-spw-5-nl-8-nh8-hd32-run-1,1,0.7378640776699028,0.7378640776699029,0.7378640776699029,0.7774892752314292,0.7142857142857143,d-vlog,test,baseline,5,0.5,"['audio_embeddings', 'face_embeddings']",8,8,32,mean
+dvlog-baseline-model-size-ablation:pt-0.50-spw-5-nl-8-nh8-hd32-run-1,1,0.7439613526570048,0.7475728155339806,0.7403846153846154,0.7168096635809438,0.7195767195767195,d-vlog,test,baseline,5,0.5,"['audio_embeddings', 'face_embeddings']",8,8,32,threshold

@@ -42,7 +42,6 @@ class TemporalEvaluator(AcumenEvaluator):
         y_preds_proba_over_time = defaultdict(lambda: {'preds': [], 'preds_threshold': [], 'true_label': None})
 
         for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader))):
-            
             finished = False
             current_latents = None
 
@@ -118,7 +117,7 @@ class TemporalEvaluator(AcumenEvaluator):
 
                 if torch.all(current_windows['is_last'] == 1):
                     finished = True
-                
+
         sorted_keys = sorted(y_preds_proba_over_time.keys())
 
         y_preds_np = np.array([y_preds[key] for key in sorted_keys])
@@ -128,6 +127,12 @@ class TemporalEvaluator(AcumenEvaluator):
         fpr, tpr, thresholds = metrics.roc_curve(
             true_labels_np, y_preds_proba_np, pos_label=1
         )
+
+        # computing optimum threshold
+        gmeans = np.sqrt(tpr * (1-fpr))
+        opt_thr_idx = np.argmax(gmeans)
+        opt_thr = thresholds[opt_thr_idx]
+        print(f"\nOPTIMUM THRESHOLD: {opt_thr}\n")
 
         acc = metrics.accuracy_score(true_labels_np, y_preds_np)
         auc = metrics.auc(fpr, tpr)
@@ -151,8 +156,8 @@ class TemporalEvaluator(AcumenEvaluator):
 
         #### compute the same metrics but using preds_threshold
 
-        y_preds_proba_over_time_threshold = np.array([np.mean(y_preds_proba_over_time[key]['preds_threshold']) 
-            if len(y_preds_proba_over_time[key]['preds_threshold']) > 0 else np.mean(y_preds_proba_over_time[key]['preds']) 
+        y_preds_proba_over_time_threshold = np.array([np.mean(y_preds_proba_over_time[key]['preds_threshold'])
+            if len(y_preds_proba_over_time[key]['preds_threshold']) > 0 else np.mean(y_preds_proba_over_time[key]['preds'])
             for key in sorted_keys])
 
         empty_keys = [key for key in sorted_keys if len(y_preds_proba_over_time[key]['preds_threshold']) == 0]

@@ -6,7 +6,7 @@ cd ../
 
 N_TEMPORAL_WINDOWS=1
 PRESENCE_THRESHOLD=0.25
-SECONDS_PER_WINDOW=9
+SECONDS_PER_WINDOW=5
 
 ENV="banamar-upv16"
 GROUP=dvlog-baseline-model-size-ablation

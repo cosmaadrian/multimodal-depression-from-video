@@ -32,6 +32,26 @@ class TemporalEvaluator(AcumenEvaluator):
 
         pprint.pprint(results)
         return results
+    
+    def compute_metrics(self, y_labels, y_preds_proba, y_preds):
+        metrics_results = {}
+
+        fpr, tpr, thresholds = metrics.roc_curve(
+            y_labels, y_preds_proba, pos_label=1
+        )
+
+        metrics_results["fpr"] = fpr
+        metrics_results["tpr"] = tpr
+        metrics_results["thresholds"] = thresholds
+        metrics_results["acc"] = metrics.accuracy_score(y_labels, y_preds)
+        metrics_results["auc"] = metrics.auc(fpr, tpr)
+        metrics_results["precision"] = metrics.precision_score(y_labels, y_preds)
+        metrics_results["recall"] = metrics.recall_score(y_labels, y_preds)
+        metrics_results["f1"] = metrics.f1_score(y_labels, y_preds)
+        metrics_results["f1_weighted"] = metrics.f1_score(y_labels, y_preds, average = "weighted")
+
+
+        return metrics_results
 
     @torch.no_grad()
     def evaluate(self, save=True):
@@ -55,7 +75,7 @@ class TemporalEvaluator(AcumenEvaluator):
             while not finished:
                 current_windows = {}
 
-                # Slow as fuck
+                # getting the current window input data
                 for video_id, next_window_offset in zip(batch['video_id'], next_video_offsets):
                     new_sample = self.val_dataloader.dataset.get_batch(video_id, next_window_offset)
 
@@ -75,23 +95,27 @@ class TemporalEvaluator(AcumenEvaluator):
                     if 'modality' in key:
                         current_windows[key] = current_windows[key].squeeze(1)
 
-                # update the things
+                # to get the next window input data
                 next_video_offsets = current_windows['next_window_offset'].cpu().numpy()
 
+                # getting predictions for the current window
                 model_output = self.model(current_windows, latent = current_latents)
 
                 probas = model_output['depression'].probas[:, 1]
                 current_latents = model_output['latent']
 
+                # checking already processed videos + progress bar implementation
                 finished_indexes = (current_windows['is_last'] == 1).detach().cpu().numpy()
                 finished_video_ids = [batch['video_id'][idx] for idx in np.argwhere(finished_indexes).ravel()]
                 not_finished_video_ids = [batch['video_id'][idx] for idx in np.argwhere(finished_indexes == False).ravel()]
                 not_finished_offset_differences = current_windows['differences'][finished_indexes == False].detach().cpu().numpy()
                 final_probas = probas[finished_indexes]
 
+                # progress bar updating
                 for video_id, difference in zip(not_finished_video_ids, not_finished_offset_differences):
                     progress_bars[video_id].update(difference)
 
+                # gathering predictions over the time
                 for video_id, proba in zip(batch['video_id'], probas.cpu().numpy()):
                     if video_id in not_finished_video_ids:
                         y_preds_proba_over_time[video_id]['preds'].append(proba.item())
@@ -101,114 +125,101 @@ class TemporalEvaluator(AcumenEvaluator):
 
                         y_preds_proba_over_time[video_id]['true_label'] = true_labels[video_id]
 
+                # taking the prediction of the last window once the video has been entirely processed
                 for video_id, proba in zip(finished_video_ids, final_probas):
-
                     if video_id in y_preds:
                         continue
-
                     y_preds[video_id] = proba.round().item()
                     y_preds_proba[video_id] = proba.item()
-
                     y_preds_proba_over_time[video_id]['preds'].append(proba.item()) # append the last one
 
                     # get preds over threshold less than min_threshold or greater than max_threshold
                     if proba.item() > self.evaluator_args.max_threshold or proba.item() < self.evaluator_args.min_threshold:
                         y_preds_proba_over_time[video_id]['preds_threshold'].append(proba.item())
 
+                # while loop break condition checking
                 if torch.all(current_windows['is_last'] == 1):
                     finished = True
 
+
+        #######################
+        ## COMPUTING METRICS ##
+        #######################
+
+        # sanity ordering
         sorted_keys = sorted(y_preds_proba_over_time.keys())
 
-        y_preds_np = np.array([y_preds[key] for key in sorted_keys])
-        y_preds_proba_np = np.array([y_preds_proba[key] for key in sorted_keys])
         true_labels_np = np.array([true_labels[key] for key in sorted_keys])
 
-        fpr, tpr, thresholds = metrics.roc_curve(
-            true_labels_np, y_preds_proba_np, pos_label=1
-        )
+        # metrics w.r.t. the last window
+        y_preds_np = np.array([y_preds[key] for key in sorted_keys])
+        y_preds_proba_np = np.array([y_preds_proba[key] for key in sorted_keys])
 
-        # computing optimum threshold
-        gmeans = np.sqrt(tpr * (1-fpr))
-        opt_thr_idx = np.argmax(gmeans)
-        opt_thr = thresholds[opt_thr_idx]
-        print(f"\nOPTIMUM THRESHOLD: {opt_thr}\n")
+        metrics_last = self.compute_metrics(true_labels_np, y_preds_proba_np, y_preds_np)
 
-        acc = metrics.accuracy_score(true_labels_np, y_preds_np)
-        auc = metrics.auc(fpr, tpr)
-        precision = metrics.precision_score(true_labels_np, y_preds_np)
-        recall = metrics.recall_score(true_labels_np, y_preds_np)
-        f1 = metrics.f1_score(true_labels_np, y_preds_np)
 
-        #### compute the same metrics but as a mean of predictions over time
-        y_preds_proba_over_time_np = np.array([np.mean(y_preds_proba_over_time[key]['preds']) for key in sorted_keys])
-        y_preds_over_time_np = y_preds_proba_over_time_np.round()
+        # metrics but as a mean of predictions over time
+        y_preds_proba_mean_over_time_np = np.array([np.mean(y_preds_proba_over_time[key]['preds']) for key in sorted_keys])
+        y_preds_mean_over_time_np = y_preds_proba_mean_over_time_np.round()
 
-        fpr_over_time, tpr_over_time, thresholds_over_time = metrics.roc_curve(
-            true_labels_np, y_preds_proba_over_time_np, pos_label=1
-        )
+        metrics_mean_over_time = self.compute_metrics(true_labels_np, y_preds_proba_mean_over_time_np, y_preds_mean_over_time_np)
 
-        acc_over_time = metrics.accuracy_score(true_labels_np, y_preds_over_time_np)
-        auc_over_time = metrics.auc(fpr_over_time, tpr_over_time)
-        precision_over_time = metrics.precision_score(true_labels_np, y_preds_over_time_np)
-        recall_over_time = metrics.recall_score(true_labels_np, y_preds_over_time_np)
-        f1_over_time = metrics.f1_score(true_labels_np, y_preds_over_time_np)
+        if self.evaluator_args.kind == "validation":
+            # computing optimum threshold
+            gmeans = np.sqrt(metrics_mean_over_time["tpr"] * (1-metrics_mean_over_time["fpr"]))
+            opt_thr_idx = np.argmax(gmeans)
+            opt_thr = metrics_mean_over_time["thresholds"][opt_thr_idx]
+            print(f"\nOPTIMUM THRESHOLD: {opt_thr}\n")
 
-        #### compute the same metrics but using preds_threshold
+        # metrics but as a mode of predictions over time
+        y_preds_mode_over_time_np = np.array([stats.mode(np.array(y_preds_proba_over_time[key]['preds']).round())[0].item() for key in sorted_keys])
 
+        metrics_mode_over_time = self.compute_metrics(true_labels_np, y_preds_proba_mean_over_time_np, y_preds_mode_over_time_np)
+
+
+        # metrics but using preds_threshold
         y_preds_proba_over_time_threshold = np.array([np.mean(y_preds_proba_over_time[key]['preds_threshold'])
             if len(y_preds_proba_over_time[key]['preds_threshold']) > 0 else np.mean(y_preds_proba_over_time[key]['preds'])
             for key in sorted_keys])
-
-        empty_keys = [key for key in sorted_keys if len(y_preds_proba_over_time[key]['preds_threshold']) == 0]
-
         y_preds_over_time_np_threshold = y_preds_proba_over_time_threshold.round()
 
+        metrics_threshold = self.compute_metrics(true_labels_np, y_preds_proba_over_time_threshold, y_preds_over_time_np_threshold)
 
-        fpr_threshold, tpr_threshold, _ = metrics.roc_curve(
-            true_labels_np, y_preds_over_time_np_threshold, pos_label=1
-            )
+        # metrics but using preds_threshold + mode instead of mean
+        y_preds_mode_over_time_np_threshold = np.array([stats.mode(np.array(y_preds_proba_over_time[key]['preds_threshold']).round())[0].item()
+            if len(y_preds_proba_over_time[key]['preds_threshold']) > 0 else stats.mode(np.array(y_preds_proba_over_time[key]['preds']).round())[0].item()
+            for key in sorted_keys])
 
-        acc_threshold = metrics.accuracy_score(true_labels_np, y_preds_over_time_np_threshold)
-        auc_threshold = metrics.auc(fpr_threshold, tpr_threshold)
-        precision_threshold = metrics.precision_score(true_labels_np, y_preds_over_time_np_threshold)
-        recall_threshold = metrics.recall_score(true_labels_np, y_preds_over_time_np_threshold)
-        f1_threshold = metrics.f1_score(true_labels_np, y_preds_over_time_np_threshold)
-
-        for key in sorted_keys:
-            y_preds_proba_over_time['preds_mean'] = np.mean(y_preds_proba_over_time[key]['preds'])
-            if len(y_preds_proba_over_time[key]['preds_threshold']) > 0:
-                y_preds_proba_over_time['preds_threshold_mean'] = np.mean(y_preds_proba_over_time[key]['preds_threshold'])
-            else:
-                y_preds_proba_over_time['preds_threshold_mean'] = np.mean(y_preds_proba_over_time[key]['preds'])
+        metrics_mode_threshold = self.compute_metrics(true_labels_np, y_preds_proba_over_time_threshold, y_preds_mode_over_time_np_threshold)
 
 
         results_for_logging = {
-            "name": [f"{self.args.group}:{self.args.name}"] * 3,
-            "run_id": [self.args.run_id] * 3,
-            "f1": [f1, f1_over_time, f1_threshold],
-            "recall": [recall, recall_over_time, recall_threshold],
-            "precision": [precision, precision_over_time, precision_threshold],
-            "auc": [auc, auc_over_time, auc_threshold],
-            "accuracy": [acc, acc_over_time, acc_threshold],
-            "dataset": [self.args.dataset] * 3,
-            "dataset_kind": [self.evaluator_args.kind] * 3,
-            "model": [self.args.model] * 3,
-            "seconds_per_window": [self.args.seconds_per_window] * 3,
-            "presence_threshold": [self.args.presence_threshold] * 3,
-            "modalities": [self.args.use_modalities] * 3,
-            "model_args.num_layers": [self.args.model_args.num_layers] * 3,
-            "model_args.self_attn_num_heads": [self.args.model_args.self_attn_num_heads] * 3,
-            "model_args.self_attn_dim_head": [self.args.model_args.self_attn_dim_head] * 3,
-            "prediction_kind": ['last', 'mean', 'threshold']
+            "name": [f"{self.args.group}:{self.args.name}"] * 5,
+            "run_id": [self.args.run_id] * 5,
+            "f1": [metrics_last["f1"], metrics_mean_over_time["f1"], metrics_mode_over_time["f1"], metrics_threshold["f1"], metrics_mode_threshold["f1"]],
+            "f1_weighted": [metrics_last["f1_weighted"], metrics_mean_over_time["f1_weighted"], metrics_mode_over_time["f1_weighted"], metrics_threshold["f1_weighted"], metrics_mode_threshold["f1_weighted"]],
+            "recall": [metrics_last["recall"], metrics_mean_over_time["recall"], metrics_mode_over_time["recall"], metrics_threshold["recall"], metrics_mode_threshold["recall"]],
+            "precision": [metrics_last["precision"], metrics_mean_over_time["precision"], metrics_mode_over_time["precision"], metrics_threshold["precision"], metrics_mode_threshold["precision"]],
+            "auc": [metrics_last["auc"], metrics_mean_over_time["auc"], metrics_mode_over_time["auc"], metrics_threshold["auc"], metrics_mode_threshold["auc"]],
+            "accuracy": [metrics_last["acc"], metrics_mean_over_time["acc"], metrics_mode_over_time["acc"], metrics_threshold["acc"], metrics_mode_threshold["acc"]],
+            "dataset": [self.args.dataset] * 5,
+            "dataset_kind": [self.evaluator_args.kind] * 5,
+            "model": [self.args.model] * 5,
+            "seconds_per_window": [self.args.seconds_per_window] * 5,
+            "presence_threshold": [self.args.presence_threshold] * 5,
+            "modalities": [self.args.use_modalities] * 5,
+            "model_args.num_layers": [self.args.model_args.num_layers] * 5,
+            "model_args.self_attn_num_heads": [self.args.model_args.self_attn_num_heads] * 5,
+            "model_args.self_attn_dim_head": [self.args.model_args.self_attn_dim_head] * 5,
+            "prediction_kind": ['last', 'mean', 'mode', 'threshold', 'mode_threshold']
         }
 
         actual_results = {
-            "f1": f1_over_time,
-            "recall": recall_over_time,
-            "precision": precision_over_time,
-            "auc": auc_over_time,
-            "accuracy": acc_over_time,
+            "f1": metrics_mean_over_time["f1"],
+            "recall": metrics_mean_over_time["recall"],
+            "precision": metrics_mean_over_time["precision"],
+            "auc": metrics_mean_over_time["auc"],
+            "accuracy": metrics_mean_over_time["acc"],
         }
 
         if save:

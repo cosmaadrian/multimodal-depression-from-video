@@ -164,10 +164,6 @@ class EDaicWozEvaluationDataset(EDaicWozDataset):
     def __init__(self, args, kind='validation', data_transforms=None):
 
         local_args = copy.deepcopy(args)
-
-        if kind in ['validation', 'test']:
-            local_args.presence_threshold = -1
-
         super().__init__(local_args, kind, data_transforms)
 
     def get_next_window(self, video_sample, window_offset = 0):
@@ -175,9 +171,10 @@ class EDaicWozEvaluationDataset(EDaicWozDataset):
         presence_mask = self.presence_masks[video_sample["video_id"]]
 
         # finding the first window where priority modalities are present
-        start_index = np.argwhere(presence_mask).ravel()[window_offset]
+        video_template = np.ones(presence_mask.shape)
+        start_index = np.argwhere(video_template).ravel()[window_offset]
         end_index = int(start_index + self.args.seconds_per_window * video_sample["video_frame_rate"])
-        last_window_idx = np.argwhere(presence_mask).ravel()[-1]
+        last_window_idx = np.argwhere(video_template).ravel()[-1]
 
         is_last = 0
         if window_offset >= last_window_idx:
@@ -195,12 +192,13 @@ class EDaicWozEvaluationDataset(EDaicWozDataset):
         end_in_seconds = start_in_seconds + self.args.seconds_per_window
 
         difference = next_window_offset - window_offset
+        satisfy_presence_thr = True if presence_mask[start_index] else False
 
-        return start_in_seconds, end_in_seconds, is_last, next_window_offset, difference, last_window_idx
+        return start_in_seconds, end_in_seconds, is_last, next_window_offset, difference, last_window_idx, satisfy_presence_thr
 
     def get_batch(self, video_id, window_offset):
         video_sample = self.df[self.df['video_id'] == video_id].iloc[0]
-        start_in_seconds, end_in_seconds, is_last, next_window_offset, difference, last_window_idx = self.get_next_window(video_sample, window_offset = window_offset)
+        start_in_seconds, end_in_seconds, is_last, next_window_offset, difference, last_window_idx, satisfy_presence_thr = self.get_next_window(video_sample, window_offset = window_offset)
 
         output = {}
         for modality in self.args.modalities:
@@ -217,6 +215,7 @@ class EDaicWozEvaluationDataset(EDaicWozDataset):
         output['start_in_seconds'] = start_in_seconds
         output['end_in_seconds'] = end_in_seconds
         output['is_last'] = is_last
+        output['satisfy_presence_thr'] = satisfy_presence_thr
         output['next_window_offset'] = next_window_offset
         output['total_windows'] = last_window_idx
         output['differences'] = difference

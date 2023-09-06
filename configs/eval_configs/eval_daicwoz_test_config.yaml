@@ -9,3 +9,5 @@ evaluators:
     args:
       dataset: daic-woz-eval
       kind: test
+      min_threshold: 0.35
+      max_threshold: 0.65

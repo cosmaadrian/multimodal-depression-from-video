@@ -9,3 +9,5 @@ evaluators:
     args:
       dataset: e-daic-woz-eval
       kind: validation
+      min_threshold: 0.35
+      max_threshold: 0.65

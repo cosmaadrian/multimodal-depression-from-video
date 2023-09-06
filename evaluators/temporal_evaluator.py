@@ -50,7 +50,6 @@ class TemporalEvaluator(AcumenEvaluator):
         metrics_results["f1"] = metrics.f1_score(y_labels, y_preds)
         metrics_results["f1_weighted"] = metrics.f1_score(y_labels, y_preds, average = "weighted")
 
-
         return metrics_results
 
     @torch.no_grad()
@@ -110,25 +109,35 @@ class TemporalEvaluator(AcumenEvaluator):
                 not_finished_video_ids = [batch['video_id'][idx] for idx in np.argwhere(finished_indexes == False).ravel()]
                 not_finished_offset_differences = current_windows['differences'][finished_indexes == False].detach().cpu().numpy()
                 final_probas = probas[finished_indexes]
+                final_satisty_presence_thr = current_windows["satisfy_presence_thr"][finished_indexes]
 
                 # progress bar updating
                 for video_id, difference in zip(not_finished_video_ids, not_finished_offset_differences):
                     progress_bars[video_id].update(difference)
 
                 # gathering predictions over the time
-                for video_id, proba in zip(batch['video_id'], probas.cpu().numpy()):
+                for video_id, proba, satisfy_presence_thr in zip(batch['video_id'], probas.cpu().numpy(), current_windows["satisfy_presence_thr"]):
                     if video_id in not_finished_video_ids:
-                        y_preds_proba_over_time[video_id]['preds'].append(proba.item())
+                        if satisfy_presence_thr:
+                            y_preds_proba_over_time[video_id]['preds'].append(proba.item())
 
-                        if proba.item() > self.evaluator_args.max_threshold or proba.item() < self.evaluator_args.min_threshold:
-                            y_preds_proba_over_time[video_id]['preds_threshold'].append(proba.item())
+                            if proba.item() > self.evaluator_args.max_threshold or proba.item() < self.evaluator_args.min_threshold:
+                                y_preds_proba_over_time[video_id]['preds_threshold'].append(proba.item())
 
-                        y_preds_proba_over_time[video_id]['true_label'] = true_labels[video_id]
+                            y_preds_proba_over_time[video_id]['true_label'] = true_labels[video_id]
+
+                            # just in case the last window do not satisfy the presence threshold condition
+                            # we take the last window probability that actually satisfied that condition
+                            y_preds[video_id] = proba.round().item()
+                            y_preds_proba[video_id] = proba.item()
 
                 # taking the prediction of the last window once the video has been entirely processed
-                for video_id, proba in zip(finished_video_ids, final_probas):
+                for video_id, proba, satisfy_presence_thr in zip(finished_video_ids, final_probas, final_satisty_presence_thr):
                     if video_id in y_preds:
                         continue
+                    if not satisfy_presence_thr:
+                        continue
+
                     y_preds[video_id] = proba.round().item()
                     y_preds_proba[video_id] = proba.item()
                     y_preds_proba_over_time[video_id]['preds'].append(proba.item()) # append the last one

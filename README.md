@@ -32,7 +32,7 @@
 
 
 ## <a name="benchmark"></a> 📖 Citation
-If you found our work useful, please cite our work:
+If you found our work useful, please cite our paper:
 
 [Reading Between the Frames: Multi-Modal Non-Verbal Depression Detection in Videos]()
 

@@ -1,2 +1,0 @@
-f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
-0.4827586206896552,0.5833333333333334,0.4117647058823529,0.7159090909090908,0.7321428571428571,baseline-e-daic-woz-modalities:audio-run-3,e-daic-woz,validation,baseline,mean over 10 runs

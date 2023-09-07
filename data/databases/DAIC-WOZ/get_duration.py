@@ -12,7 +12,7 @@ if __name__ == "__main__":
     modality = "audio_covarep"
     sessionIDs = sorted( os.listdir(data_dir) )
 
-    split_path = "./splits/test.csv"
+    split_path = "./splits/training.csv"
     splitIDs = pd.read_csv(split_path)["Participant_ID"].apply(lambda x: str(x)).tolist()
 
     total_seconds = 0.0
@@ -25,4 +25,4 @@ if __name__ == "__main__":
             total_seconds += session_nseconds
 
     total_hours = (total_seconds / 60.0) / 60.0
-    print(f"Total hours: {total_hours} || Number of samples: {len(splitIDs)}")
+    print(f"Total hours: {total_hours} || Number of samples: {len(splitIDs)} || Total seconds: {total_seconds}")

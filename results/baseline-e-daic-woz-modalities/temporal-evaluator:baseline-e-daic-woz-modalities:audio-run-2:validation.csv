@@ -1,3 +1,6 @@
-f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
-0.33333333333333337,0.8333333333333334,0.20833333333333334,0.543560606060606,0.2857142857142857,baseline-e-daic-woz-modalities:audio-run-2,e-daic-woz,validation,baseline,last
-0.36923076923076925,1.0,0.22641509433962265,0.6231060606060606,0.26785714285714285,baseline-e-daic-woz-modalities:audio-run-2,e-daic-woz,validation,baseline,mean
+name,run_id,f1,f1_weighted,recall,precision,auc,accuracy,dataset,dataset_kind,model,seconds_per_window,presence_threshold,modalities,model_args.num_layers,model_args.self_attn_num_heads,model_args.self_attn_dim_head,prediction_kind
+baseline-e-daic-woz-modalities:audio-run-2,2,0.3728813559322034,0.31709991319841013,0.9166666666666666,0.23404255319148937,0.5681818181818181,0.3392857142857143,e-daic-woz,validation,baseline,6,0.25,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",8,8,32,last
+baseline-e-daic-woz-modalities:audio-run-2,2,0.36923076923076925,0.1794248304886603,1.0,0.22641509433962265,0.6174242424242424,0.26785714285714285,e-daic-woz,validation,baseline,6,0.25,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",8,8,32,mean
+baseline-e-daic-woz-modalities:audio-run-2,2,0.38095238095238093,0.24198250728862974,1.0,0.23529411764705882,0.6174242424242424,0.30357142857142855,e-daic-woz,validation,baseline,6,0.25,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",8,8,32,mode
+baseline-e-daic-woz-modalities:audio-run-2,2,0.36923076923076925,0.1794248304886603,1.0,0.22641509433962265,0.5776515151515151,0.26785714285714285,e-daic-woz,validation,baseline,6,0.25,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",8,8,32,threshold
+baseline-e-daic-woz-modalities:audio-run-2,2,0.36923076923076925,0.1794248304886603,1.0,0.22641509433962265,0.5776515151515151,0.26785714285714285,e-daic-woz,validation,baseline,6,0.25,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",8,8,32,mode_threshold

@@ -1,9 +1,9 @@
 evaluators:
-  - name: majority_evaluator
-    args:
-      num_eval_runs: 10
-      dataset: daic-woz
-      kind: validation
+  # - name: majority_evaluator
+  #   args:
+  #     num_eval_runs: 10
+  #     dataset: daic-woz
+  #     kind: validation
   
   - name: temporal_evaluator
     args:

@@ -1,3 +1,6 @@
-f1,recall,precision,auc,accuracy,name,dataset,dataset_kind,model,prediction_kind
-0.5,0.5,0.5,0.7689393939393939,0.7857142857142857,baseline-e-daic-woz-modalities:video-run-2,e-daic-woz,validation,baseline,last
-0.3846153846153846,0.4166666666666667,0.35714285714285715,0.6912878787878788,0.7142857142857143,baseline-e-daic-woz-modalities:video-run-2,e-daic-woz,validation,baseline,mean
+name,run_id,f1,f1_weighted,recall,precision,auc,accuracy,dataset,dataset_kind,model,seconds_per_window,presence_threshold,modalities,model_args.num_layers,model_args.self_attn_num_heads,model_args.self_attn_dim_head,prediction_kind
+baseline-e-daic-woz-modalities:video-run-2,2,0.2857142857142857,0.7667638483965015,0.16666666666666666,1.0,0.6344696969696969,0.8214285714285714,e-daic-woz,validation,baseline,6,0.25,"['edaic_video_cnn_resnet', 'edaic_video_pose_gaze_aus']",8,8,32,last
+baseline-e-daic-woz-modalities:video-run-2,2,0.3846153846153846,0.7219524661385125,0.4166666666666667,0.35714285714285715,0.6893939393939394,0.7142857142857143,e-daic-woz,validation,baseline,6,0.25,"['edaic_video_cnn_resnet', 'edaic_video_pose_gaze_aus']",8,8,32,mean
+baseline-e-daic-woz-modalities:video-run-2,2,0.3846153846153846,0.7219524661385125,0.4166666666666667,0.35714285714285715,0.6893939393939394,0.7142857142857143,e-daic-woz,validation,baseline,6,0.25,"['edaic_video_cnn_resnet', 'edaic_video_pose_gaze_aus']",8,8,32,mode
+baseline-e-daic-woz-modalities:video-run-2,2,0.3846153846153846,0.7219524661385125,0.4166666666666667,0.35714285714285715,0.6893939393939394,0.7142857142857143,e-daic-woz,validation,baseline,6,0.25,"['edaic_video_cnn_resnet', 'edaic_video_pose_gaze_aus']",8,8,32,threshold
+baseline-e-daic-woz-modalities:video-run-2,2,0.3846153846153846,0.7219524661385125,0.4166666666666667,0.35714285714285715,0.6893939393939394,0.7142857142857143,e-daic-woz,validation,baseline,6,0.25,"['edaic_video_cnn_resnet', 'edaic_video_pose_gaze_aus']",8,8,32,mode_threshold

@@ -32,7 +32,7 @@ class TemporalEvaluator(AcumenEvaluator):
 
         pprint.pprint(results)
         return results
-    
+
     def compute_metrics(self, y_labels, y_preds_proba, y_preds):
         metrics_results = {}
 
@@ -48,17 +48,23 @@ class TemporalEvaluator(AcumenEvaluator):
         metrics_results["precision"] = metrics.precision_score(y_labels, y_preds)
         metrics_results["recall"] = metrics.recall_score(y_labels, y_preds)
         metrics_results["f1"] = metrics.f1_score(y_labels, y_preds)
-        metrics_results["f1_weighted"] = metrics.f1_score(y_labels, y_preds, average = "weighted")
+        # metrics_results["f1_weighted"] = metrics.f1_score(y_labels, y_preds, average = "weighted")
 
         return metrics_results
 
     @torch.no_grad()
     def evaluate(self, save=True):
+        true_labels = {}
+        
+        # considering all the windows that compose the video clip
         y_preds = {}
         y_preds_proba = {}
-        true_labels = {}
-
         y_preds_proba_over_time = defaultdict(lambda: {'preds': [], 'preds_threshold': [], 'true_label': None})
+
+        # only considering those windows that satisfy the presence threshold condition
+        y_preds_presence = {}
+        y_preds_proba_presence = {}
+        y_preds_proba_over_time_presence = defaultdict(lambda: {'preds': [], 'preds_threshold': [], 'true_label': None})
 
         for i, batch in enumerate(tqdm(self.val_dataloader, total=len(self.val_dataloader))):
             finished = False
@@ -119,24 +125,39 @@ class TemporalEvaluator(AcumenEvaluator):
                 for video_id, proba, satisfy_presence_thr in zip(batch['video_id'], probas.cpu().numpy(), current_windows["satisfy_presence_thr"]):
                     if video_id in not_finished_video_ids:
                         if satisfy_presence_thr:
-                            y_preds_proba_over_time[video_id]['preds'].append(proba.item())
+                            y_preds_proba_over_time_presence[video_id]['preds'].append(proba.item())
 
                             if proba.item() > self.evaluator_args.max_threshold or proba.item() < self.evaluator_args.min_threshold:
-                                y_preds_proba_over_time[video_id]['preds_threshold'].append(proba.item())
+                                y_preds_proba_over_time_presence[video_id]['preds_threshold'].append(proba.item())
 
-                            y_preds_proba_over_time[video_id]['true_label'] = true_labels[video_id]
+                            y_preds_proba_over_time_presence[video_id]['true_label'] = true_labels[video_id]
 
                             # just in case the last window do not satisfy the presence threshold condition
                             # we take the last window probability that actually satisfied that condition
-                            y_preds[video_id] = proba.round().item()
-                            y_preds_proba[video_id] = proba.item()
+                            y_preds_presence[video_id] = proba.round().item()
+                            y_preds_proba_presence[video_id] = proba.item()
+
+                        # not considering the presence threshold, i.e., taking all the probas
+                        y_preds_proba_over_time[video_id]['preds'].append(proba.item())
+
+                        if proba.item() > self.evaluator_args.max_threshold or proba.item() < self.evaluator_args.min_threshold:
+                            y_preds_proba_over_time[video_id]['preds_threshold'].append(proba.item())
+
+                        y_preds_proba_over_time[video_id]['true_label'] = true_labels[video_id]
 
                 # taking the prediction of the last window once the video has been entirely processed
                 for video_id, proba, satisfy_presence_thr in zip(finished_video_ids, final_probas, final_satisty_presence_thr):
                     if video_id in y_preds:
                         continue
-                    if not satisfy_presence_thr:
-                        continue
+
+                    if satisfy_presence_thr:
+                        y_preds_presence[video_id] = proba.round().item()
+                        y_preds_proba_presence[video_id] = proba.item()
+                        y_preds_proba_over_time_presence[video_id]['preds'].append(proba.item()) # append the last one
+
+                        # get preds over threshold less than min_threshold or greater than max_threshold
+                        if proba.item() > self.evaluator_args.max_threshold or proba.item() < self.evaluator_args.min_threshold:
+                            y_preds_proba_over_time_presence[video_id]['preds_threshold'].append(proba.item())
 
                     y_preds[video_id] = proba.round().item()
                     y_preds_proba[video_id] = proba.item()
@@ -160,33 +181,26 @@ class TemporalEvaluator(AcumenEvaluator):
 
         true_labels_np = np.array([true_labels[key] for key in sorted_keys])
 
-        # metrics w.r.t. the last window
+        ############################################################################################################################################################################################
+
+        # 1. metrics w.r.t. the last window
         y_preds_np = np.array([y_preds[key] for key in sorted_keys])
         y_preds_proba_np = np.array([y_preds_proba[key] for key in sorted_keys])
 
         metrics_last = self.compute_metrics(true_labels_np, y_preds_proba_np, y_preds_np)
 
-
-        # metrics but as a mean of predictions over time
+        # 2. metrics but as a mean of predictions over time
         y_preds_proba_mean_over_time_np = np.array([np.mean(y_preds_proba_over_time[key]['preds']) for key in sorted_keys])
         y_preds_mean_over_time_np = y_preds_proba_mean_over_time_np.round()
 
         metrics_mean_over_time = self.compute_metrics(true_labels_np, y_preds_proba_mean_over_time_np, y_preds_mean_over_time_np)
 
-        if self.evaluator_args.kind == "validation":
-            # computing optimum threshold
-            gmeans = np.sqrt(metrics_mean_over_time["tpr"] * (1-metrics_mean_over_time["fpr"]))
-            opt_thr_idx = np.argmax(gmeans)
-            opt_thr = metrics_mean_over_time["thresholds"][opt_thr_idx]
-            print(f"\nOPTIMUM THRESHOLD: {opt_thr}\n")
-
-        # metrics but as a mode of predictions over time
+        # 3. metrics but as a mode of predictions over time
         y_preds_mode_over_time_np = np.array([stats.mode(np.array(y_preds_proba_over_time[key]['preds']).round())[0].item() for key in sorted_keys])
 
         metrics_mode_over_time = self.compute_metrics(true_labels_np, y_preds_proba_mean_over_time_np, y_preds_mode_over_time_np)
 
-
-        # metrics but using preds_threshold
+        # 4. metrics but using preds_threshold
         y_preds_proba_over_time_threshold = np.array([np.mean(y_preds_proba_over_time[key]['preds_threshold'])
             if len(y_preds_proba_over_time[key]['preds_threshold']) > 0 else np.mean(y_preds_proba_over_time[key]['preds'])
             for key in sorted_keys])
@@ -194,33 +208,83 @@ class TemporalEvaluator(AcumenEvaluator):
 
         metrics_threshold = self.compute_metrics(true_labels_np, y_preds_proba_over_time_threshold, y_preds_over_time_np_threshold)
 
-        # metrics but using preds_threshold + mode instead of mean
+        # 5. metrics but using preds_threshold + mode instead of mean
         y_preds_mode_over_time_np_threshold = np.array([stats.mode(np.array(y_preds_proba_over_time[key]['preds_threshold']).round())[0].item()
             if len(y_preds_proba_over_time[key]['preds_threshold']) > 0 else stats.mode(np.array(y_preds_proba_over_time[key]['preds']).round())[0].item()
             for key in sorted_keys])
 
         metrics_mode_threshold = self.compute_metrics(true_labels_np, y_preds_proba_over_time_threshold, y_preds_mode_over_time_np_threshold)
 
+        ############################################################################################################################################################################################
+
+        # 1. (presence) metrics w.r.t. the last window
+        y_preds_presence_np = np.array([y_preds_presence[key] for key in sorted_keys])
+        y_preds_proba_presence_np = np.array([y_preds_proba_presence[key] for key in sorted_keys])
+
+        metrics_last_presence = self.compute_metrics(true_labels_np, y_preds_proba_presence_np, y_preds_presence_np)
+
+        # 2. (presence) metrics but as a mean of predictions over time
+        y_preds_proba_mean_over_time_presence_np = np.array([np.mean(y_preds_proba_over_time_presence[key]['preds']) for key in sorted_keys])
+        y_preds_mean_over_time_presence_np = y_preds_proba_mean_over_time_presence_np.round()
+
+        metrics_mean_over_time_presence = self.compute_metrics(true_labels_np, y_preds_proba_mean_over_time_presence_np, y_preds_mean_over_time_presence_np)
+
+        # 3. (presence) metrics but as a mode of predictions over time
+        y_preds_mode_over_time_presence_np = np.array([stats.mode(np.array(y_preds_proba_over_time_presence[key]['preds']).round())[0].item() for key in sorted_keys])
+
+        metrics_mode_over_time_presence = self.compute_metrics(true_labels_np, y_preds_proba_mean_over_time_presence_np, y_preds_mode_over_time_presence_np)
+
+        # 4. metrics but using preds_threshold
+        y_preds_proba_over_time_threshold_presence = np.array([np.mean(y_preds_proba_over_time_presence[key]['preds_threshold'])
+            if len(y_preds_proba_over_time_presence[key]['preds_threshold']) > 0 else np.mean(y_preds_proba_over_time_presence[key]['preds'])
+            for key in sorted_keys])
+        y_preds_over_time_np_threshold_presence = y_preds_proba_over_time_threshold_presence.round()
+
+        metrics_threshold_presence = self.compute_metrics(true_labels_np, y_preds_proba_over_time_threshold_presence, y_preds_over_time_np_threshold_presence)
+
+        # 5. metrics but using preds_threshold + mode instead of mean
+        y_preds_mode_over_time_np_threshold_presence = np.array([stats.mode(np.array(y_preds_proba_over_time_presence[key]['preds_threshold']).round())[0].item()
+            if len(y_preds_proba_over_time_presence[key]['preds_threshold']) > 0 else stats.mode(np.array(y_preds_proba_over_time_presence[key]['preds']).round())[0].item()
+            for key in sorted_keys])
+
+        metrics_mode_threshold_presence = self.compute_metrics(true_labels_np, y_preds_proba_over_time_threshold_presence, y_preds_mode_over_time_np_threshold_presence)
+
+        ############################################################################################################################################################################################
+
+        f1 = [metrics_last["f1"], metrics_mean_over_time["f1"], metrics_mode_over_time["f1"], metrics_threshold["f1"], metrics_mode_threshold["f1"]]
+        f1_presence = [metrics_last_presence["f1"], metrics_mean_over_time_presence["f1"], metrics_mode_over_time_presence["f1"], metrics_threshold_presence["f1"], metrics_mode_threshold_presence["f1"]]
+
+        recall = [metrics_last["recall"], metrics_mean_over_time["recall"], metrics_mode_over_time["recall"], metrics_threshold["recall"], metrics_mode_threshold["recall"]]
+        recall_presence = [metrics_last_presence["recall"], metrics_mean_over_time_presence["recall"], metrics_mode_over_time_presence["recall"], metrics_threshold_presence["recall"], metrics_mode_threshold_presence["recall"]]
+
+        precision = [metrics_last["precision"], metrics_mean_over_time["precision"], metrics_mode_over_time["precision"], metrics_threshold["precision"], metrics_mode_threshold["precision"]]
+        precision_presence = [metrics_last_presence["precision"], metrics_mean_over_time_presence["precision"], metrics_mode_over_time_presence["precision"], metrics_threshold_presence["precision"], metrics_mode_threshold_presence["precision"]]
+
+        auc = [metrics_last["auc"], metrics_mean_over_time["auc"], metrics_mode_over_time["auc"], metrics_threshold["auc"], metrics_mode_threshold["auc"]]
+        auc_presence = [metrics_last_presence["auc"], metrics_mean_over_time_presence["auc"], metrics_mode_over_time_presence["auc"], metrics_threshold_presence["auc"], metrics_mode_threshold_presence["auc"]]
+
+        accuracy = [metrics_last["acc"], metrics_mean_over_time["acc"], metrics_mode_over_time["acc"], metrics_threshold["acc"], metrics_mode_threshold["acc"]]
+        accuracy_presence = [metrics_last_presence["acc"], metrics_mean_over_time_presence["acc"], metrics_mode_over_time_presence["acc"], metrics_threshold_presence["acc"], metrics_mode_threshold_presence["acc"]]
+
 
         results_for_logging = {
-            "name": [f"{self.args.group}:{self.args.name}"] * 5,
-            "run_id": [self.args.run_id] * 5,
-            "f1": [metrics_last["f1"], metrics_mean_over_time["f1"], metrics_mode_over_time["f1"], metrics_threshold["f1"], metrics_mode_threshold["f1"]],
-            "f1_weighted": [metrics_last["f1_weighted"], metrics_mean_over_time["f1_weighted"], metrics_mode_over_time["f1_weighted"], metrics_threshold["f1_weighted"], metrics_mode_threshold["f1_weighted"]],
-            "recall": [metrics_last["recall"], metrics_mean_over_time["recall"], metrics_mode_over_time["recall"], metrics_threshold["recall"], metrics_mode_threshold["recall"]],
-            "precision": [metrics_last["precision"], metrics_mean_over_time["precision"], metrics_mode_over_time["precision"], metrics_threshold["precision"], metrics_mode_threshold["precision"]],
-            "auc": [metrics_last["auc"], metrics_mean_over_time["auc"], metrics_mode_over_time["auc"], metrics_threshold["auc"], metrics_mode_threshold["auc"]],
-            "accuracy": [metrics_last["acc"], metrics_mean_over_time["acc"], metrics_mode_over_time["acc"], metrics_threshold["acc"], metrics_mode_threshold["acc"]],
-            "dataset": [self.args.dataset] * 5,
-            "dataset_kind": [self.evaluator_args.kind] * 5,
-            "model": [self.args.model] * 5,
-            "seconds_per_window": [self.args.seconds_per_window] * 5,
-            "presence_threshold": [self.args.presence_threshold] * 5,
-            "modalities": [self.args.use_modalities] * 5,
-            "model_args.num_layers": [self.args.model_args.num_layers] * 5,
-            "model_args.self_attn_num_heads": [self.args.model_args.self_attn_num_heads] * 5,
-            "model_args.self_attn_dim_head": [self.args.model_args.self_attn_dim_head] * 5,
-            "prediction_kind": ['last', 'mean', 'mode', 'threshold', 'mode_threshold']
+            "name": [f"{self.args.group}:{self.args.name}"] * 10,
+            "run_id": [self.args.run_id] * 10,
+            "f1": f1 + f1_presence,
+            "recall": recall + recall_presence,
+            "precision": precision + precision_presence,
+            "auc": auc + auc_presence,
+            "accuracy": accuracy + accuracy_presence,
+            "dataset": [self.args.dataset] * 10,
+            "dataset_kind": [self.evaluator_args.kind] * 10,
+            "model": [self.args.model] * 10,
+            "seconds_per_window": [self.args.seconds_per_window] * 10,
+            "presence_threshold": [self.args.presence_threshold] * 10,
+            "modalities": [self.args.use_modalities] * 10,
+            "model_args.num_layers": [self.args.model_args.num_layers] * 10,
+            "model_args.self_attn_num_heads": [self.args.model_args.self_attn_num_heads] * 10,
+            "model_args.self_attn_dim_head": [self.args.model_args.self_attn_dim_head] * 10,
+            "prediction_kind": ['last', 'mean', 'mode', 'threshold', 'mode_threshold'] + ['last_presence', 'mean_presence', 'mode_presence', 'threshold_presence', 'mode_threshold_presence'],
         }
 
         actual_results = {

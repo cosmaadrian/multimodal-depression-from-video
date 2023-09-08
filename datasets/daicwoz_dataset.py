@@ -17,13 +17,13 @@ class DaicWozDataset(AcumenDataset):
         self.nomenclature = nomenclature
 
         if kind == 'train':
-            self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/training.csv', index_col=0)
+            self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/training.csv')
 
         if kind == 'validation':
-            self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/validation.csv', index_col=0)
+            self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/validation.csv')
 
         if kind == 'test':
-            self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/test.csv', index_col=0)
+            self.df = pd.read_csv(f'{args.environment["daic-woz"]}/splits/test.csv')
 
         self.df['video_id'] = self.df["Participant_ID"].map(lambda x: str(x))
         self.df['label'] = self.df["PHQ8_Binary"]

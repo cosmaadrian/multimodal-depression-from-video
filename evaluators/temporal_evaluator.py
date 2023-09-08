@@ -48,14 +48,14 @@ class TemporalEvaluator(AcumenEvaluator):
         metrics_results["precision"] = metrics.precision_score(y_labels, y_preds)
         metrics_results["recall"] = metrics.recall_score(y_labels, y_preds)
         metrics_results["f1"] = metrics.f1_score(y_labels, y_preds)
-        # metrics_results["f1_weighted"] = metrics.f1_score(y_labels, y_preds, average = "weighted")
+        metrics_results["f1_weighted"] = metrics.f1_score(y_labels, y_preds, average = "weighted")
 
         return metrics_results
 
     @torch.no_grad()
     def evaluate(self, save=True):
         true_labels = {}
-        
+
         # considering all the windows that compose the video clip
         y_preds = {}
         y_preds_proba = {}
@@ -266,6 +266,8 @@ class TemporalEvaluator(AcumenEvaluator):
         accuracy = [metrics_last["acc"], metrics_mean_over_time["acc"], metrics_mode_over_time["acc"], metrics_threshold["acc"], metrics_mode_threshold["acc"]]
         accuracy_presence = [metrics_last_presence["acc"], metrics_mean_over_time_presence["acc"], metrics_mode_over_time_presence["acc"], metrics_threshold_presence["acc"], metrics_mode_threshold_presence["acc"]]
 
+        f1_weighted = [metrics_last["f1_weighted"], metrics_mean_over_time["f1_weighted"], metrics_mode_over_time["f1_weighted"], metrics_threshold["f1_weighted"], metrics_mode_threshold["f1_weighted"]]
+        f1_weighted_presence = [metrics_last_presence["f1_weighted"], metrics_mean_over_time_presence["f1_weighted"], metrics_mode_over_time_presence["f1_weighted"], metrics_threshold_presence["f1_weighted"], metrics_mode_threshold_presence["f1_weighted"]]
 
         results_for_logging = {
             "name": [f"{self.args.group}:{self.args.name}"] * 10,
@@ -275,6 +277,7 @@ class TemporalEvaluator(AcumenEvaluator):
             "precision": precision + precision_presence,
             "auc": auc + auc_presence,
             "accuracy": accuracy + accuracy_presence,
+            "f1_weighted": f1_weighted + f1_weighted_presence,
             "dataset": [self.args.dataset] * 10,
             "dataset_kind": [self.evaluator_args.kind] * 10,
             "model": [self.args.model] * 10,

@@ -1,4 +1,4 @@
-Participant_ID,PHQ_Binary,PHQ_Score,Gender,duration
+Participant_ID,PHQ8_Binary,PHQ_Score,Gender,duration
 300,0,2,1,648.51
 301,0,3,1,823.89
 306,0,0,0,858.09

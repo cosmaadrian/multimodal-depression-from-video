@@ -121,8 +121,6 @@ class Modality(object):
                 output = data[start_index:end_index]
             else:
                 output = np.concatenate((output, data[start_index:end_index]))
-            if video_id == "652":
-                print("UFF:", self.modality_dir, output.shape, start_index, end_index, start_frame, end_frame)
 
         no_modality_mask = self.modality_masks[video_id][start_frame:end_frame]
 
@@ -154,7 +152,7 @@ class Modality(object):
         no_modality_mask = np.asarray(np.split(no_modality_mask, self.args.n_temporal_windows, axis=0))
 
         # assert output.shape[1] != 0, f'output shape ({original_shape} -> {output.shape}) is 0, {start_in_seconds}, {end_in_seconds}, {self.args.n_temporal_windows}, {self.args.seconds_per_window}, {video_sample["duration"]}'
-        assert output.shape[1] != 0, f'{video_id}: output shape ({original_shape} -> {output.shape}) is 0, {start_in_seconds}, {end_in_seconds}, {self.args.n_temporal_windows}, {self.args.seconds_per_window}, {video_sample["duration"]}'
+        assert output.shape[1] != 0, f'{video_id}:{self.modality_dir}: output shape ({original_shape} -> {output.shape}) is 0, {start_in_seconds}, {end_in_seconds}, {self.args.n_temporal_windows}, {self.args.seconds_per_window}, {video_sample["duration"]}'
 
         return output.astype('float32'), no_modality_mask
 

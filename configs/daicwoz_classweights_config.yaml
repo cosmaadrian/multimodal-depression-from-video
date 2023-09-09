@@ -30,3 +30,4 @@ losses:
     target_head: depression
     args:
       num_classes: 2
+      weights: [0.7061247584789897, 1.7128576976621788] #[control_weight, depr_weight]

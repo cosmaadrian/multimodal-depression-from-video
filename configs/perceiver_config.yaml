@@ -3,7 +3,7 @@ trainer: classification
 $extends$: configs/base_config.yaml
 
 n_temporal_windows: 1
-seconds_per_window: 5
+seconds_per_window: 9
 
 $includes$:
   - configs/modality_config.yaml
@@ -13,13 +13,13 @@ model_args:
   latent_num: 16
   latent_dim: 128
   context_dim: 256
-  cross_attn_num_heads: 4
-  cross_attn_dim_head: 64
+  cross_attn_num_heads: 8
+  cross_attn_dim_head: 32
   cross_attn_parameter_sharing: false
   self_attn_block_type: "transformer"
-  self_attn_num_layers: 12
-  self_attn_num_heads: 4
-  self_attn_dim_head: 64
+  self_attn_num_layers: 8
+  self_attn_num_heads: 8
+  self_attn_dim_head: 32
   dropout_rate: 0.1
   layer_dropout_rate: 0.0
   self_attn_parameter_sharing: true

@@ -20,12 +20,11 @@ ALL_MODALITIES='audio_embeddings face_embeddings face_landmarks body_landmarks h
 WANDB_MODE=run
 GROUP=perceiver-ablation-modalities
 
-TRAINING_ARGS='--trainer ${TRAINER} --scheduler ${SCHEDULER} --epochs ${EPOCHS} --batch_size ${BATCH_SIZE} --scheduler_args.max_lr ${MAX_LR} --scheduler_args.end_epoch ${EPOCHS}'
+TRAINING_ARGS='--trainer '$TRAINER' --scheduler '$SCHEDULER' --epochs '$EPOCHS' --batch_size '$BATCH_SIZE' --scheduler_args.max_lr '$MAX_LR' --scheduler_args.end_epoch '$EPOCHS
 MODEL_ARGS='--model_args.latent_num 16 --model_args.latent_dim 128 --model_args.context_dim 256 --model_args.cross_attn_num_heads 8 --model_args.cross_attn_dim_head 32 --model_args.self_attn_num_layers 8 --model_args.self_attn_num_heads 8 --model_args.self_attn_dim_head 32'
 
 # # AV + LM + EYES
 python main.py --run_id 1 --save_model 1 --group $GROUP --mode $WANDB_MODE --name av+lm+eyes-run-1 --presence_threshold $PRESENCE_THRESHOLD --n_temporal_windows $N_TEMPORAL_WINDOWS --seconds_per_window $SECONDS_PER_WINDOW  $TRAINING_ARGS $MODEL_ARGS --config_file configs/perceiver_config.yaml --env banamar-upv16 --use_modalities $ALL_MODALITIES
-exit -1;
 python main.py --run_id 2 --save_model 2 --group $GROUP --mode $WANDB_MODE --name av+lm+eyes-run-2 --presence_threshold $PRESENCE_THRESHOLD --n_temporal_windows $N_TEMPORAL_WINDOWS --seconds_per_window $SECONDS_PER_WINDOW  $TRAINING_ARGS $MODEL_ARGS --config_file configs/perceiver_config.yaml --env banamar-upv16 --use_modalities $ALL_MODALITIES
 python main.py --run_id 3 --save_model 3 --group $GROUP --mode $WANDB_MODE --name av+lm+eyes-run-3 --presence_threshold $PRESENCE_THRESHOLD --n_temporal_windows $N_TEMPORAL_WINDOWS --seconds_per_window $SECONDS_PER_WINDOW  $TRAINING_ARGS $MODEL_ARGS --config_file configs/perceiver_config.yaml --env banamar-upv16 --use_modalities $ALL_MODALITIES
 python main.py --run_id 4 --save_model 4 --group $GROUP --mode $WANDB_MODE --name av+lm+eyes-run-4 --presence_threshold $PRESENCE_THRESHOLD --n_temporal_windows $N_TEMPORAL_WINDOWS --seconds_per_window $SECONDS_PER_WINDOW  $TRAINING_ARGS $MODEL_ARGS --config_file configs/perceiver_config.yaml --env banamar-upv16 --use_modalities $ALL_MODALITIES

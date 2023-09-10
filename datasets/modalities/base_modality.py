@@ -130,10 +130,16 @@ class Modality(object):
         if output.shape[0] % self.args.n_temporal_windows != 0 or output.shape[0] % self.args.seconds_per_window != 0:
             # padding so we can properly split into windows
             padding = int(self.args.n_temporal_windows * self.args.seconds_per_window * np.ceil(fps)) - output.shape[0]
+            if padding < 0:
+                output = output[:-padding, ...]
+                padding = int(self.args.n_temporal_windows * self.args.seconds_per_window * np.ceil(fps)) - output.shape[0]
             assert padding >= 0, "padding is negative"
 
             # pad the mask
             mask_padding = int(self.args.n_temporal_windows * self.args.seconds_per_window * np.ceil(fps)) - no_modality_mask.shape[0]
+            if mask_padding < 0:
+                no_modality_mask = no_modality_mask[:-padding, ...]
+                mask_padding = int(self.args.n_temporal_windows * self.args.seconds_per_window * np.ceil(fps)) - no_modality_mask.shape[0]
             mask_padding = int(mask_padding)
 
             # hack, i dont even know what this does

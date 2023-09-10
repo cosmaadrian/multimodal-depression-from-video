@@ -3,7 +3,7 @@ trainer: classification
 $extends$: configs/base_config.yaml
 
 n_temporal_windows: 1
-seconds_per_window: 10
+seconds_per_window: 6
 
 $includes$:
   - configs/modality_config.yaml
@@ -18,8 +18,8 @@ evaluators:
 model: baseline
 model_args:
   latent_dim: 256
-  num_layers: 4
-  self_attn_num_heads: 8
+  num_layers: 8
+  self_attn_num_heads: 4
   self_attn_dim_head: 64
   dropout_rate: 0.1
   layer_dropout_rate: 0.0
@@ -30,3 +30,4 @@ losses:
     target_head: depression
     args:
       num_classes: 2
+      weights: [0.7061247584789897, 1.7128576976621788] #[control_weight, depr_weight]

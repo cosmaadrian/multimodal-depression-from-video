@@ -31,7 +31,7 @@
 ## <a name="benchmark"></a> 📊 Benchmark
 
 
-## <a name="benchmark"></a> 📖 Citation
+## <a name="citation"></a> 📖 Citation
 If you found our work useful, please cite our paper:
 
 [Reading Between the Frames: Multi-Modal Non-Verbal Depression Detection in Videos]()
@@ -43,6 +43,6 @@ If you found our work useful, please cite our paper:
 }
 ```
 
-## <a name="benchmark"></a> 📝 License
+## <a name="license"></a> 📝 License
 
 This work is protected by [CC BY-NC-ND 4.0 License (Non-Commercial & No Derivatives)](LICENSE).

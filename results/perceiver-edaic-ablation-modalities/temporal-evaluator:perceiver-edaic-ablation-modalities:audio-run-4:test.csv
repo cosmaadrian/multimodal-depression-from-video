@@ -1,0 +1,11 @@
+name,run_id,f1,recall,precision,auc,accuracy,f1_weighted,dataset,dataset_kind,model,seconds_per_window,presence_threshold,modalities,prediction_kind
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5052790346907994,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",last
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5354449472096531,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",mean
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5354449472096531,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",mode
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.1,0.058823529411764705,0.3333333333333333,0.5580693815987934,0.6785714285714286,0.590527950310559,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",threshold
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.1,0.058823529411764705,0.3333333333333333,0.5580693815987934,0.6785714285714286,0.590527950310559,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",mode_threshold
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5052790346907994,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",last_presence
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5324283559577677,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",mean_presence
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5324283559577677,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",mode_presence
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5535444947209653,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",threshold_presence
+perceiver-edaic-ablation-modalities:audio-run-4,4,0.0,0.0,0.0,0.5535444947209653,0.6785714285714286,0.5630699088145896,e-daic-woz,test,perceiver,6,0.5,"['edaic_audio_mfcc', 'edaic_audio_egemaps']",mode_threshold_presence

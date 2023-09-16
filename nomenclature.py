@@ -13,6 +13,10 @@ DATASETS = {
     'original-d-vlog': datasets.OriginalDVlogDataset,
     'original-d-vlog-eval': datasets.OriginalDVlogEvaluationDataset,
 
+    # Original DVlog data but removing missed YouTube videos
+    'original-d-vlog-new-split': datasets.OriginalDVlogNewSplitDataset,
+    'original-d-vlog-new-split-eval': datasets.OriginalDVlogNewSplitEvaluationDataset,
+
     # DAIC-WOZ data
     'daic-woz': datasets.DaicWozDataset,
     'daic-woz-eval': datasets.DaicWozEvaluationDataset,

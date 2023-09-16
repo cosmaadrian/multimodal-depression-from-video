@@ -83,6 +83,7 @@ class OriginalDVlogFaceLandmarks(Modality):
             start_in_seconds = end_in_seconds - self.args.seconds_per_window
 
         output = video_features[start_in_seconds:end_in_seconds]
+        output = np.expand_dims(output, self.args.n_temporal_windows) # introducing the window dimension. WARNING: IT IS NOT CORRECT!
 
         return output.astype('float32'), np.ones(output.shape[0])
 
@@ -102,6 +103,7 @@ class OriginalDVlogAudioDescriptors(Modality):
             start_in_seconds = end_in_seconds - self.args.seconds_per_window
 
         output = audio_descriptors[start_in_seconds:end_in_seconds]
+        output = np.expand_dims(output, self.args.n_temporal_windows) # introducing the window dimension. WARNING: IT IS NOT CORRECT!
 
         return output.astype('float32'), np.ones(output.shape[0])
 

@@ -1,0 +1,13 @@
+evaluators:
+  # - name: majority_evaluator
+  #   args:
+  #     num_eval_runs: 10
+  #     dataset: original-d-vlog
+  #     kind: test
+
+  - name: temporal_evaluator
+    args:
+      dataset: original-d-vlog-new-split-eval
+      kind: test
+      min_threshold: 0.35
+      max_threshold: 0.65

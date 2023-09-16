@@ -290,9 +290,9 @@ class TemporalEvaluator(AcumenEvaluator):
             "seconds_per_window": [self.args.seconds_per_window] * 10,
             "presence_threshold": [self.args.presence_threshold] * 10,
             "modalities": [self.args.use_modalities] * 10,
-            "model_args.num_layers": [self.args.model_args.num_layers] * 10,
-            "model_args.self_attn_num_heads": [self.args.model_args.self_attn_num_heads] * 10,
-            "model_args.self_attn_dim_head": [self.args.model_args.self_attn_dim_head] * 10,
+            # "model_args.num_layers": [self.args.model_args.num_layers] * 10,
+            # "model_args.self_attn_num_heads": [self.args.model_args.self_attn_num_heads] * 10,
+            # "model_args.self_attn_dim_head": [self.args.model_args.self_attn_dim_head] * 10,
             "prediction_kind": ['last', 'mean', 'mode', 'threshold', 'mode_threshold'] + ['last_presence', 'mean_presence', 'mode_presence', 'threshold_presence', 'mode_threshold_presence'],
         }
 

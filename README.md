@@ -17,8 +17,11 @@
 
 <div align="center"> <img src="images/arch.png"  width="720"> </div>
 
+## <a name="tldr"> </a> TL;DR 
+We extract high-level non-verbal cues using **pretrained models**, process them using a **modality-specific encoder**, condition the resulting embeddings with **positional and modality embeddings**, and process the sequence with a **transformer encoder** to perform the final classification.
+
 ## <a name="intro"></a> 📘 Introduction
-*Depression, a prominent contributor to global disability, affects a substantial portion of the population. Efforts to detect depression from social media text have been prevalent, yet only a few works explored depression detection from user-generated video content. In this work, we address this research gap by proposing a simple and flexible multi-modal temporal model capable of discerning non-verbal depression cues from diverse modalities in noisy, real-world videos. We show that, for in-the-wild videos, using additional high-level non-verbal cues is crucial to achieve good performance, and we extracted and processed audio speech embeddings, face emotion embeddings, face, body and hand landmarks, and gaze and blinking information. Through extensive experiments, we show that our model achieves state-of-the-art results on three key benchmark datasets for depression detection from video by a substantial margin.*
+*Depression, a prominent contributor to global disability, affects a substantial portion of the population. Efforts to detect depression from social media texts have been prevalent, yet only a few works explored depression detection from user-generated video content. In this work, we address this research gap by proposing a simple and flexible multi-modal temporal model capable of discerning non-verbal depression cues from diverse modalities in noisy, real-world videos. We show that, for in-the-wild videos, using additional high-level non-verbal cues is crucial to achieving good performance, and we extracted and processed audio speech embeddings, face emotion embeddings, face, body and hand landmarks, and gaze and blinking information. Through extensive experiments, we show that our model achieves state-of-the-art results on three key benchmark datasets for depression detection from video by a substantial margin.*
 
 ## <a name="preparation"></a> 🛠️ Data Preparation
 

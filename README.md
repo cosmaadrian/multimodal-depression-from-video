@@ -1,5 +1,11 @@
 <h1 align="center"><span style="font-weight:normal">Reading Between the Frames:<br />Multi-Modal Depression Detection in Videos from Non-Verbal Cues</h1>
 
+
+<div align="center">
+  
+[David Gimeno-Gómez](https://scholar.google.es/citations?user=DVRSla8AAAAJ&hl=en), [Ana-Maria Bucur](https://scholar.google.com/citations?user=TQuQ5IAAAAAJ&hl=en), [Adrian Cosma](https://scholar.google.com/citations?user=cdYk_RUAAAAJ&hl=en), [Carlos-D. Martínez-Hinarejos](https://scholar.google.es/citations?user=M_EmUoIAAAAJ&hl=en), [Paolo Rosso](https://scholar.google.es/citations?user=HFKXPH8AAAAJ&hl=en)
+</div>
+
 <div align="center">
   
 [📘 Introduction](#intro) |
@@ -9,10 +15,7 @@
 [📝 License](#license)
 </div>
 
-<div align="center">
-  
-[David Gimeno-Gómez](https://scholar.google.es/citations?user=DVRSla8AAAAJ&hl=en), [Ana-Maria Bucur](https://scholar.google.com/citations?user=TQuQ5IAAAAAJ&hl=en), [Adrian Cosma](https://scholar.google.com/citations?user=cdYk_RUAAAAJ&hl=en), [Carlos-D. Martínez-Hinarejos](https://scholar.google.es/citations?user=M_EmUoIAAAAJ&hl=en), [Paolo Rosso](https://scholar.google.es/citations?user=HFKXPH8AAAAJ&hl=en)
-</div>
+<div align="center"> <img src="images/arch.png"  width="720"> </div>
 
 ## <a name="intro"></a> 📘 Introduction
 *Depression, a prominent contributor to global disability, affects a substantial portion of the population. Efforts to detect depression from social media text have been prevalent, yet only a few works explored depression detection from user-generated video content. In this work, we address this research gap by proposing a simple and flexible multi-modal temporal model capable of discerning non-verbal depression cues from diverse modalities in noisy, real-world videos. We show that, for in-the-wild videos, using additional high-level non-verbal cues is crucial to achieve good performance, and we extracted and processed audio speech embeddings, face emotion embeddings, face, body and hand landmarks, and gaze and blinking information. Through extensive experiments, we show that our model achieves state-of-the-art results on three key benchmark datasets for depression detection from video by a substantial margin.*
@@ -99,7 +102,7 @@ bash ./scripts/feature_extraction/extract-edaic-features.sh
 conda deactivate
 ```
 
-## Implementation Detail
+### Implementation Detail
 
 Once all the data has been pre-processed, you should indicate the absule path to the directory where it is stored
 in the 'configs/env_config.yaml' file for each one of the corresponding datasets.
@@ -110,6 +113,13 @@ need for training and evaluating our model:
 ```
 conda activate landmarks
 ```
+
+### Modality distributions for D-Vlog
+
+Once extracted, the modalities for D-Vlog should be similar to the following plots (counts / missing frames):
+
+
+<div align="center"> <img src="images/counts.png"  width="256"> <img src="images/presence-fraction.png"  width="256"> </div>
 
 ## <a name="training"></a> 💪 Training and Evaluation
 To train and evaluate the models and the results reported in the paper, you can run the following commands:
@@ -135,4 +145,4 @@ If you found our work useful, please cite our paper:
 
 ## <a name="license"></a> 📝 License
 
-This work is protected by [CC BY-NC-ND 4.0 License (Non-Commercial & No Derivatives)]
+This work is protected by [CC BY-NC-ND 4.0 License (Non-Commercial & No Derivatives)](LICENSE)

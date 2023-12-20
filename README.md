@@ -147,6 +147,8 @@ If you found our work useful, please cite our paper:
 }
 ```
 
+This repository is based on the [Acumen ✨ Template ✨](https://github.com/cosmaadrian/acumen-template).
+
 ## <a name="license"></a> 📝 License
 
 This work is protected by [CC BY-NC-ND 4.0 License (Non-Commercial & No Derivatives)](LICENSE)

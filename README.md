@@ -1,5 +1,5 @@
 <h1 align="center"><span style="font-weight:normal">Reading Between the 🎞️ Frames:<br />Multi-Modal Depression Detection in Videos from Non-Verbal Cues</h1>
-
+<h2 align="center"> Accepted at the 2024 edition of European Conference on Information Retrieval (ECIR).</h2>
 
 <div align="center">
   
@@ -18,6 +18,7 @@
 <div align="center"> <img src="images/arch.png"  width="720"> </div>
 
 ## <a name="tldr"> </a> TL;DR 
+
 We extract high-level non-verbal cues using **pretrained models**, process them using a **modality-specific encoder**, condition the resulting embeddings with **positional and modality embeddings**, and process the sequence with a **transformer encoder** to perform the final classification.
 
 ## <a name="intro"></a> 📘 Introduction

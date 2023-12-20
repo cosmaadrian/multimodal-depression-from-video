@@ -1,4 +1,4 @@
-<h1 align="center"><span style="font-weight:normal">Reading Between the Frames:<br />Multi-Modal Depression Detection in Videos from Non-Verbal Cues</h1>
+<h1 align="center"><span style="font-weight:normal">Reading Between the 🎞️ Frames:<br />Multi-Modal Depression Detection in Videos from Non-Verbal Cues</h1>
 
 
 <div align="center">

@@ -1,14 +1,33 @@
-# Reading Between the Frames: Multi-Modal Depression Detection in Videos from Non-Verbal Cues
+<h1 align="center"><span style="font-weight:normal">Reading Between the Frames:<br />Multi-Modal Depression Detection in Videos from Non-Verbal Cues</h1>
 
-## Downloading datasets
+<div align="center">
+  
+[📘 Introduction](#intro) |
+[🛠️ Data Preparation](#preparation) |
+[💪 Training and Evaluation](#training) |
+[📖 Citation](#citation) |
+[📝 License](#license)
+</div>
 
-- For D-Vlog, albeit the features extracted by the authors are publicly available [here](https://sites.google.com/view/jeewoo-yoon/dataset), original vlog videos are available upon request.
+<div align="center">
+  
+[David Gimeno-Gómez](https://scholar.google.es/citations?user=DVRSla8AAAAJ&hl=en), [Ana-Maria Bucur](https://scholar.google.com/citations?user=TQuQ5IAAAAAJ&hl=en), [Adrian Cosma](https://scholar.google.com/citations?user=cdYk_RUAAAAJ&hl=en), [Carlos-D. Martínez-Hinarejos](https://scholar.google.es/citations?user=M_EmUoIAAAAJ&hl=en), [Paolo Rosso](https://scholar.google.es/citations?user=HFKXPH8AAAAJ&hl=en)
+</div>
+
+## <a name="intro"></a> 📘 Introduction
+*Depression, a prominent contributor to global disability, affects a substantial portion of the population. Efforts to detect depression from social media text have been prevalent, yet only a few works explored depression detection from user-generated video content. In this work, we address this research gap by proposing a simple and flexible multi-modal temporal model capable of discerning non-verbal depression cues from diverse modalities in noisy, real-world videos. We show that, for in-the-wild videos, using additional high-level non-verbal cues is crucial to achieve good performance, and we extracted and processed audio speech embeddings, face emotion embeddings, face, body and hand landmarks, and gaze and blinking information. Through extensive experiments, we show that our model achieves state-of-the-art results on three key benchmark datasets for depression detection from video by a substantial margin.*
+
+## <a name="preparation"></a> 🛠️ Data Preparation
+
+### Downloading the datasets
+
+- For D-Vlog, the features extracted by the authors are publicly available [here](https://sites.google.com/view/jeewoo-yoon/dataset). Original vlog videos are available upon request. Please contact the original paper authors.
 
 - For DAIC-WOZ and E-DAIC, the features are only available upon request [here](https://dcapswoz.ict.usc.edu/).
 
-## Extracting non-verbal modalities from D-Vlog
+### Extracting non-verbal modalities from D-Vlog
 
-### D-Vlog
+#### D-Vlog
 
 - To extract the audio embeddings:
 
@@ -61,7 +80,7 @@ bash ./scripts/feature_extraction/extract-dvlog-blinking-feats.sh
 conda deactivate instblink
 ```
 
-### DAIC-WOZ
+#### DAIC-WOZ
 
 - To pre-process the DAIC-WOZ features:
 
@@ -71,7 +90,7 @@ bash ./scripts/feature_extraction/extract-daicwoz-features.sh
 conda deactivate
 ```
 
-### E-DAIC
+#### E-DAIC
 - To pre-process the DAIC-WOZ features:
 
 ```
@@ -92,7 +111,7 @@ need for training and evaluating our model:
 conda activate landmarks
 ```
 
-## Training and Evaluation
+## <a name="training"></a> 💪 Training and Evaluation
 To train and evaluate the models and the results reported in the paper, you can run the following commands:
 
 ```
@@ -100,6 +119,20 @@ cd experiments/
 bash run-exps.sh
 ```
 
-## License
+## <a name="citation"></a> 📖 Citation
+If you found our work useful, please cite our paper:
 
-This work is protected by CC BY-NC-ND 4.0 License (Non-Commercial & No Derivatives).
+[Reading Between the Frames: Multi-Modal Non-Verbal Depression Detection in Videos]()
+
+```
+@InProceedings{gimeno24depression,
+  author="Gimeno-Gómez, David and Bucur, Ana-Maria and Cosma, Adrian and Martínez-Hinarejos, Carlos-D and Rosso, Paolo",
+  title="Reading Between the Frames: Multi-Modal Depression Detection in Videos from Non-Verbal Cues",
+  booktitle="Advances in Information Retrieval",
+  year="2024",
+}
+```
+
+## <a name="license"></a> 📝 License
+
+This work is protected by [CC BY-NC-ND 4.0 License (Non-Commercial & No Derivatives)]

@@ -32,7 +32,10 @@ We extract high-level non-verbal cues using **pretrained models**, process them 
 
 - For DAIC-WOZ and E-DAIC, the features are only available upon request [here](https://dcapswoz.ict.usc.edu/).
 
-### Extracting non-verbal modalities from D-Vlog
+### Extracting non-verbal modalities
+
+<details>
+<summary> Click here for detailed tutorial </summary>
 
 #### D-Vlog
 
@@ -86,7 +89,6 @@ bash ./scripts/conda_envs/prepare_instblink_env.sh
 bash ./scripts/feature_extraction/extract-dvlog-blinking-feats.sh
 conda deactivate instblink
 ```
-
 #### DAIC-WOZ
 
 - To pre-process the DAIC-WOZ features:
@@ -105,6 +107,8 @@ conda activate landmarks
 bash ./scripts/feature_extraction/extract-edaic-features.sh
 conda deactivate
 ```
+
+</details>
 
 ### Implementation Detail
 

@@ -1,0 +1,5 @@
+evaluators:
+  - name: temporal_evaluator
+    args:
+      dataset: daic-woz-eval
+      kind: validation

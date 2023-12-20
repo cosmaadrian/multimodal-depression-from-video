@@ -1,0 +1,50 @@
+dataset: d-vlog
+accumulation_steps: 1
+
+run_id: 1
+seed: -1
+
+save_model: 1
+
+log_every: 5
+epochs: 200
+eval_every: 1
+batch_size: 8
+
+n_temporal_windows: 1
+seconds_per_window: 9
+presence_threshold: 0.50
+
+use_modalities: [audio_embeddings, face_embeddings, face_landmarks, body_landmarks, hand_landmarks, gaze_features, blinking_features]
+
+model_checkpoint:
+  monitor_quantity: TemporalEvaluator_f1
+  direction: up
+
+evaluators:
+  - name: temporal_evaluator
+    args:
+      dataset: d-vlog-eval
+      kind: validation
+
+heads:
+  - kind: classification
+    name: depression
+    args:
+      num_classes: 2
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2
+
+scheduler: "cyclelr"
+scheduler_args:
+  start_epoch: 0
+  end_epoch: 200
+  max_lr:  0.0001
+  mode: triangular
+  step_size_up: 24
+  step_size_down: 24

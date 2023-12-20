@@ -1,0 +1,5 @@
+evaluators:
+  - name: temporal_evaluator
+    args:
+      dataset: original-d-vlog-eval
+      kind: test

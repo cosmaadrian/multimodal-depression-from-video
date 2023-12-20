@@ -1,0 +1,145 @@
+modalities:
+  - name: audio_embeddings
+    input_dim: 256
+    model_args:
+      latent_dim: 256
+
+  - name: face_embeddings
+    input_dim: 256
+    model_args:
+      latent_dim: 256
+
+  - name: face_landmarks
+    input_dim: 204
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: body_landmarks
+    input_dim: 165
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: hand_landmarks
+    input_dim: 105
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: gaze_features
+    input_dim: 3
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: blinking_features
+    input_dim: 1
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: orig_face_landmarks
+    input_dim: 136
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+  
+  - name: orig_audio_descriptors
+    input_dim: 25
+    model_args:
+      latent_dim: 256
+
+  - name: daic_audio_covarep
+    input_dim: 74
+    model_args:
+      latent_dim: 256
+
+  - name: daic_audio_formant
+    input_dim: 5
+    model_args:
+      latent_dim: 256
+
+  - name: daic_facial_3d_landmarks
+    input_dim: 204
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: daic_facial_aus
+    input_dim: 20
+    model_args:
+      latent_dim: 256
+
+  - name: daic_facial_hog
+    input_dim: 4468
+    model_args:
+      latent_dim: 256
+
+  - name: daic_gaze
+    input_dim: 12
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: daic_head_pose
+    input_dim: 6
+    model_args:
+      latent_dim: 256
+      num_layers: 2
+      self_attn_num_heads: 4
+      self_attn_dim_head: 64
+      dropout_rate: 0.1
+      layer_dropout_rate: 0.0
+
+  - name: edaic_audio_mfcc
+    input_dim: 39
+    model_args:
+      latent_dim: 256
+
+  - name: edaic_audio_egemaps
+    input_dim: 23
+    model_args:
+      latent_dim: 256
+
+  - name: edaic_video_cnn_resnet
+    input_dim: 2048
+    model_args:
+      latent_dim: 256
+
+  - name: edaic_video_pose_gaze_aus
+    input_dim: 49
+    model_args:
+      latent_dim: 256

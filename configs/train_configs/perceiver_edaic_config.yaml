@@ -1,0 +1,39 @@
+trainer: classification
+
+$extends$: configs/base_config.yaml
+
+n_temporal_windows: 1
+seconds_per_window: 6
+
+$includes$:
+  - configs/modality_config.yaml
+
+evaluators:
+  - name: temporal_evaluator
+    args:
+      dataset: e-daic-woz-eval
+      kind: validation
+
+model: perceiver
+model_args:
+  latent_num: 16
+  latent_dim: 128
+  context_dim: 256
+  cross_attn_num_heads: 8
+  cross_attn_dim_head: 32
+  cross_attn_parameter_sharing: false
+  self_attn_block_type: "transformer"
+  self_attn_num_layers: 8
+  self_attn_num_heads: 8
+  self_attn_dim_head: 32
+  dropout_rate: 0.1
+  layer_dropout_rate: 0.0
+  self_attn_parameter_sharing: true
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2
+      weights: [0.6475150476268496, 2.194742360334613] #[control_weight, depr_weight]

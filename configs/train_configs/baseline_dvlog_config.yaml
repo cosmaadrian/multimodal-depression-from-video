@@ -1,0 +1,23 @@
+trainer: classification
+
+$extends$: configs/base_config.yaml
+
+$includes$:
+  - configs/modality_config.yaml
+
+model: baseline
+model_args:
+  latent_dim: 256
+  num_layers: 8
+  self_attn_num_heads: 8
+  self_attn_dim_head: 32
+  dropout_rate: 0.1
+  layer_dropout_rate: 0.0
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2
+      weights: [1.19801204733859, 0.8581600073425819] #[control_weight, depr_weight]

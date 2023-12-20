@@ -1,0 +1,31 @@
+trainer: classification
+
+$extends$: configs/base_config.yaml
+
+n_temporal_windows: 1
+seconds_per_window: 9
+
+$includes$:
+  - configs/modality_config.yaml
+
+evaluators:
+  - name: temporal_evaluator
+    args:
+      dataset: original-d-vlog-eval
+      kind: validation
+
+model: baseline
+model_args:
+  latent_dim: 256
+  num_layers: 8
+  self_attn_num_heads: 8
+  self_attn_dim_head: 32
+  dropout_rate: 0.1
+  layer_dropout_rate: 0.0
+
+losses:
+  - kind: xe
+    name: depression
+    target_head: depression
+    args:
+      num_classes: 2

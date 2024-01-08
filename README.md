@@ -6,6 +6,8 @@
 [David Gimeno-Gómez](https://scholar.google.es/citations?user=DVRSla8AAAAJ&hl=en), [Ana-Maria Bucur](https://scholar.google.com/citations?user=TQuQ5IAAAAAJ&hl=en), [Adrian Cosma](https://scholar.google.com/citations?user=cdYk_RUAAAAJ&hl=en), [Carlos-D. Martínez-Hinarejos](https://scholar.google.es/citations?user=M_EmUoIAAAAJ&hl=en), [Paolo Rosso](https://scholar.google.es/citations?user=HFKXPH8AAAAJ&hl=en)
 </div>
 
+
+
 <div align="center">
   
 [📘 Introduction](#intro) |
@@ -18,6 +20,10 @@
 <div align="center"> <img src="images/arch.png"  width="720"> </div>
 
 ## <a name="tldr"> </a> TL;DR 
+<div>
+  
+  [📜 Arxiv Link](https://arxiv.org/abs/2401.02746)
+</div>
 
 We extract high-level non-verbal cues using **pretrained models**, process them using a **modality-specific encoder**, condition the resulting embeddings with **positional and modality embeddings**, and process the sequence with a **transformer encoder** to perform the final classification.
 
@@ -140,7 +146,7 @@ bash run-exps.sh
 ## <a name="citation"></a> 📖 Citation
 If you found our work useful, please cite our paper:
 
-[Reading Between the Frames: Multi-Modal Non-Verbal Depression Detection in Videos]()
+[Reading Between the Frames: Multi-Modal Non-Verbal Depression Detection in Videos](https://arxiv.org/abs/2401.02746)
 
 ```
 @InProceedings{gimeno24depression,

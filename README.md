@@ -20,9 +20,10 @@
 <div align="center"> <img src="images/arch.png"  width="720"> </div>
 
 ## <a name="tldr"> </a> TL;DR 
-<div>
+<div align="center">
   
   [📜 Arxiv Link](https://arxiv.org/abs/2401.02746)
+  [🛝 Google Slides](https://docs.google.com/presentation/d/1QskN661UrygIYqaqa1yGkuLz4O4zwbnal_gWO5lOJ0s/edit?usp=sharing)
 </div>
 
 We extract high-level non-verbal cues using **pretrained models**, process them using a **modality-specific encoder**, condition the resulting embeddings with **positional and modality embeddings**, and process the sequence with a **transformer encoder** to perform the final classification.

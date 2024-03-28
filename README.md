@@ -150,11 +150,16 @@ If you found our work useful, please cite our paper:
 [Reading Between the Frames: Multi-Modal Non-Verbal Depression Detection in Videos](https://arxiv.org/abs/2401.02746)
 
 ```
-@InProceedings{gimeno24depression,
-  author="Gimeno-Gómez, David and Bucur, Ana-Maria and Cosma, Adrian and Martínez-Hinarejos, Carlos-D and Rosso, Paolo",
-  title="Reading Between the Frames: Multi-Modal Depression Detection in Videos from Non-Verbal Cues",
+@InProceedings{gimeno2024videodepression,
+  author="Gimeno-G{\'o}mez, David and Bucur, Ana-Maria and Cosma, Adrian and Mart{\'i}nez-Hinarejos, Carlos-David and Rosso, Paolo",
+  editor="Goharian, Nazli and Tonellotto, Nicola and He, Yulan and Lipani, Aldo and McDonald, Graham and Macdonald, Craig and Ounis, Iadh",
+  title="Reading Between the Frames: Multi-modal Depression Detection in Videos from Non-verbal Cues",
   booktitle="Advances in Information Retrieval",
   year="2024",
+  publisher="Springer Nature Switzerland",
+  address="Cham",
+  pages="191--209",
+  isbn="978-3-031-56027-9"
 }
 ```
 

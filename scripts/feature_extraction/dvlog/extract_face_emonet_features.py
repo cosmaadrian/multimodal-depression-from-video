@@ -12,8 +12,8 @@ import sys
 sys.path.append('./')
 from tools.emonet.emonet.models.emonet import EmoNet
 
-def load_face(image_path, target_width=256, target_height=256, transform=transforms.ToTensor()):
-    image = np.load(image_path)["data"].astype(np.uint8)
+def load_face(face, target_width=256, target_height=256, transform=transforms.ToTensor()):
+    image = face.astype(np.uint8)
 
     assert(image.ndim==3 and image.shape[2]==3)
     assert(image.dtype == np.uint8)
@@ -24,21 +24,20 @@ def load_face(image_path, target_width=256, target_height=256, transform=transfo
 
     return torch.unsqueeze(tensor_img, 0)
 
-def process_video(videoID):
-    video_dir = os.path.join(args.faces_dir, videoID)
-    faceIDs = sorted(os.listdir(video_dir))
+def process_video(facesID):
+    faces_path = os.path.join(args.faces_dir, facesID)
+    faces = np.load(faces_path)["data"]
 
-    dst_embedding_path = os.path.join(args.face_embeddings_output_dir, videoID+".npz")
+    dst_embedding_path = os.path.join(args.face_embeddings_output_dir, facesID)
 
     if os.path.exists(dst_embedding_path):
-        print(f"Skipping sample {videoID} because it was already processed")
+        print(f"Skipping sample {facesID} because it was already processed")
     else:
         embedding_seq = np.empty((0,256))
-        for faceID in faceIDs:
-            face_path = os.path.join(video_dir, faceID)
-            face = load_face(face_path)
+        for face in faces:
+            face_tensor = load_face(face)
 
-            emonet_embed, out = emonet(face)
+            emonet_embed, out = emonet(face_tensor)
             embedding_seq = np.vstack( (embedding_seq, emonet_embed.cpu().detach().numpy()) )
 
         np.savez_compressed(dst_embedding_path, data=embedding_seq)
@@ -65,8 +64,8 @@ if __name__ == "__main__":
 
     os.makedirs(args.face_embeddings_output_dir, exist_ok=True)
 
-    videoIDs = [video for video in sorted(os.listdir(args.faces_dir))][args.left_index:args.right_index]
-    loop = tqdm(videoIDs)
+    facesIDs = [video for video in sorted(os.listdir(args.faces_dir))][args.left_index:args.right_index]
+    loop = tqdm(facesIDs)
     joblib.Parallel(n_jobs=10)(
-        joblib.delayed(process_video)(videoID) for videoID in loop
+        joblib.delayed(process_video)(facesID) for facesID in loop
     )

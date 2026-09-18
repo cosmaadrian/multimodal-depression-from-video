@@ -6,8 +6,6 @@
 [David Gimeno-Gómez](https://scholar.google.es/citations?user=DVRSla8AAAAJ&hl=en), [Ana-Maria Bucur](https://scholar.google.com/citations?user=TQuQ5IAAAAAJ&hl=en), [Adrian Cosma](https://scholar.google.com/citations?user=cdYk_RUAAAAJ&hl=en), [Carlos-D. Martínez-Hinarejos](https://scholar.google.es/citations?user=M_EmUoIAAAAJ&hl=en), [Paolo Rosso](https://scholar.google.es/citations?user=HFKXPH8AAAAJ&hl=en)
 </div>
 
-
-
 <div align="center">
   
 [📘 Introduction](#intro) |
@@ -16,6 +14,15 @@
 [📖 Citation](#citation) |
 [📝 License](#license)
 </div>
+
+------
+✨ *Latest Updates*
+
+📢 **Model Checkpoints Available** for the best-performing setting on D-vlog ([click here](https://github.com/cosmaadrian/multimodal-depression-from-video/blob/master/checkpoints.zip)).
+
+📢 **Pre-computed Multimodal Features Available** for D-vlog ([click here](https://zenodo.org/records/22794446)).
+
+------
 
 <div align="center"> <img src="images/arch.png"  width="720"> </div>
 
